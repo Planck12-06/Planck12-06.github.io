@@ -1,0 +1,203 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>大一学习总结 | Planck's Blog</title><meta name="author" content="Planck"><meta name="copyright" content="Planck"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#fafbfc"><meta name="description" content="大一上Java高三暑假收到软件工程的录取通知书，开始学习Java基础，了解了Java基本语法。但由于实验室招新考试没过（要求有算法基础），便暂停了Java的学习。 C语言10月份开始转学C语言，断断续续到12月学完C语言。 数据结构与算法学完C语言后开始学习数据结构与算法，能够手写顺序表、链表、队列、栈、二叉树、图等常见数据结构。 Python寒假期间开始学习Python，掌握Python基础语法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大一学习总结">
+<meta property="og:url" content="https://planck12-06.github.io/2026/07/10/%E5%A4%A7%E4%B8%80%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="Planck&#39;s Blog">
+<meta property="og:description" content="大一上Java高三暑假收到软件工程的录取通知书，开始学习Java基础，了解了Java基本语法。但由于实验室招新考试没过（要求有算法基础），便暂停了Java的学习。 C语言10月份开始转学C语言，断断续续到12月学完C语言。 数据结构与算法学完C语言后开始学习数据结构与算法，能够手写顺序表、链表、队列、栈、二叉树、图等常见数据结构。 Python寒假期间开始学习Python，掌握Python基础语法">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/Planck12-06.png">
+<meta property="article:published_time" content="2026-07-10T13:03:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T13:50:33.221Z">
+<meta property="article:author" content="Planck">
+<meta property="article:tag" content="总结">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/Planck12-06.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "大一学习总结",
+  "url": "https://planck12-06.github.io/2026/07/10/%E5%A4%A7%E4%B8%80%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/",
+  "image": "https://github.com/Planck12-06.png",
+  "datePublished": "2026-07-10T13:03:00.000Z",
+  "dateModified": "2026-07-10T13:50:33.221Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Planck",
+      "url": "https://planck12-06.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://planck12-06.github.io/2026/07/10/%E5%A4%A7%E4%B8%80%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1a1d21')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fafbfc')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&amp;family=Playfair+Display:wght@400;700&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":3,"unescape":true,"pagination":{"enable":true,"hitsPerPage":10},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '大一学习总结',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div class="bg-animation" id="web_bg" style="background-image: url(/img/atri-sunflower.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/Planck12-06.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fa-fw fab fa-github"></i><span> GitHub</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Planck's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">大一学习总结</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fa-fw fab fa-github"></i><span> GitHub</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">大一学习总结</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-10T13:03:00.000Z" title="发表于 2026-07-10 21:03:00">2026-07-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T13:50:33.221Z" title="更新于 2026-07-10 21:50:33">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%94%9F%E6%B4%BB%E9%9A%8F%E7%AC%94/">生活随笔</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">328</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读大概需要时长:</span><span>1分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="大一上"><a href="#大一上" class="headerlink" title="大一上"></a>大一上</h2><h3 id="Java"><a href="#Java" class="headerlink" title="Java"></a>Java</h3><p>高三暑假收到软件工程的录取通知书，开始学习Java基础，了解了Java基本语法。但由于实验室招新考试没过（要求有算法基础），便暂停了Java的学习。</p>
+<h3 id="C语言"><a href="#C语言" class="headerlink" title="C语言"></a>C语言</h3><p>10月份开始转学C语言，断断续续到12月学完C语言。</p>
+<h3 id="数据结构与算法"><a href="#数据结构与算法" class="headerlink" title="数据结构与算法"></a>数据结构与算法</h3><p>学完C语言后开始学习数据结构与算法，能够手写<strong>顺序表、链表、队列、栈、二叉树、图</strong>等常见数据结构。</p>
+<h3 id="Python"><a href="#Python" class="headerlink" title="Python"></a>Python</h3><p>寒假期间开始学习Python，掌握Python基础语法。使用 <strong>Streamlit</strong> 和 <strong>OpenAI</strong> 包跟着黑马程序员写了一个「AI虚拟伴侣」项目，实现了<strong>对话存储、流式输出</strong>等功能。</p>
+<p>📸 <a href="/img/AImate/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202026-07-10%20214433.png">项目截图1 - 对话界面</a> | <a href="/img/AImate/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202026-07-10%20214500.png">项目截图2</a> | <a href="/img/AImate/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202026-07-10%20214620.png">项目截图3</a></p>
+<h3 id="C"><a href="#C" class="headerlink" title="C++"></a>C++</h3><p>完成Python项目后开始学习 **C++**，掌握了 <strong>STL库</strong> 的使用方法，并开始学习一些算法。</p>
+<blockquote>
+<p>由于练习不够、操之过急，4月份蓝桥杯只拿到了<strong>省二等奖</strong>。<a href="/img/lanqiao_erdeng.jpg">📄 查看获奖证书</a></p>
+</blockquote>
+<h2 id="大一下"><a href="#大一下" class="headerlink" title="大一下"></a>大一下</h2><h3 id="JavaSE-MySQL"><a href="#JavaSE-MySQL" class="headerlink" title="JavaSE &amp; MySQL"></a>JavaSE &amp; MySQL</h3><p>5月份重新开始学习 <strong>JavaSE</strong>，月底学完。之后开始学习 <strong>MySQL</strong>，掌握了数据库的<strong>增删改查（CRUD）</strong>语句。</p>
+<h3 id="SSM框架"><a href="#SSM框架" class="headerlink" title="SSM框架"></a>SSM框架</h3><p>MySQL学完后，开始学习 <strong>SSM（Spring + SpringMVC + MyBatis）</strong> 框架，一直持续到现在。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://planck12-06.github.io">Planck</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://planck12-06.github.io/2026/07/10/%E5%A4%A7%E4%B8%80%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">https://planck12-06.github.io/2026/07/10/%E5%A4%A7%E4%B8%80%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://planck12-06.github.io" target="_blank">Planck's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%80%BB%E7%BB%93/">总结</a></div><div class="post-share"><div class="social-share" data-image="https://github.com/Planck12-06.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/11/%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95/" title="软件测试基础与 JUnit 单元测试"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">软件测试基础与 JUnit 单元测试</div></div><div class="info-2"><div class="info-item-1">一、软件测试的四个阶段软件测试通常分为以下四个阶段，各阶段的测试范围和关注点依次递进：    阶段 测试类型 说明    单元测试 白盒测试 对最小的可测试单元（方法&#x2F;函数）进行验证   集成测试 灰盒测试 模块之间接口和交互的测试   系统测试 黑盒测试 整个系统功能与性能的全面验证   验收测试 黑盒测试 用户确认系统是否满足业务需求   各阶段详细说明 单元测试（白盒）：开发人员编写，基于代码内部逻辑，关注每个方法的正确性。 集成测试（灰盒）：介于黑白盒之间，既关注接口也关注部分内部实现，验证模块协作是否正常。 系统测试（黑盒）：测试人员执行，不考虑内部实现，从用户角度验证整体功能。 验收测试（黑盒）：最终用户或代表参与，确认系统是否符合预期需求。   二、为什么不用 main 方法做单元测试？使用 main 方法进行测试存在以下问题：    问题 具体表现    代码耦合 测试代码与源代码未分离，混在一起难以维护   **相互影响 一个测试方法失败会阻塞后续方法的执行   缺乏自动化 无法自动运行测试并生成规范的测试报告    三、JUnit 单元测试框架JUn...</div></div></div></a><a class="pagination-related" href="/2026/07/10/hello-world/" title="Hello World - 我的第一篇博客"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Hello World - 我的第一篇博客</div></div><div class="info-2"><div class="info-item-1">🎉 欢迎来到我的博客！这是我的第一篇博客文章，标志着这段记录旅程的开始。 关于这个博客这里将是我分享思考、记录生活、展示作品的地方。希望每一篇文章都能带给你一些启发或共鸣。 ✨ 博客特色 📝 内容原创：用心撰写每一篇文章 🎨 视觉舒适：采用现代化的设计风格 🌈 阅读体验：精心优化的排版和配色 💡 持续更新：保持学习和创作的热情  🚀 技术栈本博客使用以下技术构建：  Hexo - 快速、简洁且高效的静态博客框架 Butterfly - 精美的Hexo主题 GitHub Pages - 托管和部署  🔮 未来计划 分享学习笔记和技术心得 记录生活中的点滴感悟 探索更多有趣的主题   感谢你的访问，期待与你在这里相遇！ 💜 </div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/Planck12-06.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Planck</div><div class="author-info-description">记录全栈+AI学习过程的博客</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到Planck的技术Blog🚀🚀</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E4%B8%80%E4%B8%8A"><span class="toc-number">1.</span> <span class="toc-text">大一上</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Java"><span class="toc-number">1.1.</span> <span class="toc-text">Java</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#C%E8%AF%AD%E8%A8%80"><span class="toc-number">1.2.</span> <span class="toc-text">C语言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95"><span class="toc-number">1.3.</span> <span class="toc-text">数据结构与算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Python"><span class="toc-number">1.4.</span> <span class="toc-text">Python</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#C"><span class="toc-number">1.5.</span> <span class="toc-text">C++</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E4%B8%80%E4%B8%8B"><span class="toc-number">2.</span> <span class="toc-text">大一下</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JavaSE-MySQL"><span class="toc-number">2.1.</span> <span class="toc-text">JavaSE &amp; MySQL</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SSM%E6%A1%86%E6%9E%B6"><span class="toc-number">2.2.</span> <span class="toc-text">SSM框架</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/19/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" title="分布式缓存">分布式缓存</a><time datetime="2026-08-19T08:51:10.000Z" title="发表于 2026-08-19 16:51:10">2026-08-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/18/Feed%E6%B5%81/" title="Feed流">Feed流</a><time datetime="2026-08-18T08:59:36.000Z" title="发表于 2026-08-18 16:59:36">2026-08-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/17/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" title="消息队列">消息队列</a><time datetime="2026-08-17T12:54:09.000Z" title="发表于 2026-08-17 20:54:09">2026-08-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" title="分布式锁">分布式锁</a><time datetime="2026-08-16T01:43:26.000Z" title="发表于 2026-08-16 09:43:26">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/15/%E6%82%B2%E8%A7%82%E9%94%81/" title="悲观锁">悲观锁</a><time datetime="2026-08-15T13:39:57.000Z" title="发表于 2026-08-15 21:39:57">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Planck</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.5"></script></div></div></body></html>

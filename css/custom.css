@@ -1,0 +1,1229 @@
+/* ========================================
+   Planck's Blog - 卡片式首页 + 极简清新主题
+   风格：通透干净、大量留白、低饱和高级感
+   适配：Hexo Butterfly 主题 (index_layout: 4)
+======================================== */
+
+
+/* ========================================
+   1. 全局布局 - 加宽留白、居中透气
+======================================== */
+
+/* 页面整体 + 覆盖主题 CSS 变量 */
+:root {
+  --global-font-size: 18px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.9;
+  letter-spacing: 0.4px;
+  background-color: #faf8f5;
+  color: #1a1a1a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 主内容区加宽 */
+#page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 60px;
+}
+
+@media screen and (max-width: 768px) {
+  #page {
+    padding: 0 20px;
+  }
+}
+
+
+/* ========================================
+   2. Grid 网格容器 - 标准两栏等分
+======================================== */
+
+/* 文章列表外层容器 */
+#recent-posts .recent-post-items {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  padding: 0;
+}
+
+/* 单独文章不做特殊处理，全部等分 */
+#recent-posts .recent-post-item {
+  width: 100%;
+  margin: 0;
+}
+
+
+/* ========================================
+   3. 卡片整体 - 统一尺寸、圆角、柔光
+======================================== */
+
+#recent-posts .recent-post-item {
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04),
+              0 4px 16px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  padding: 0;
+}
+
+/* 取消主题原有 info 的 flex 方向，改为纵向堆叠 */
+#recent-posts .recent-post-info {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  height: 100%;
+}
+
+/* 重置主题 padding */
+#recent-posts .recent-post-item .recent-post-info {
+  padding: 0;
+}
+
+
+/* ========================================
+   4. 卡片封面大图 - 视觉差异来源
+======================================== */
+
+/* 封面图容器占卡片上半部分 */
+#recent-posts .post_cover {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  margin: 0;
+  border-radius: 0;
+  flex-shrink: 0;
+}
+
+/* 封面图本体：圆角继承卡片顶部、裁切铺满 */
+#recent-posts .post_cover img.post_bg,
+#recent-posts .post_cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 0;
+  margin: 0;
+  transition: transform 0.35s ease;
+}
+
+/* hover 时封面图微放大，增加灵动感 */
+#recent-posts .recent-post-item:hover .post_cover img.post_bg,
+#recent-posts .recent-post-item:hover .post_cover img {
+  transform: scale(1.03);
+}
+
+
+/* ========================================
+   5. 卡片文字区 - 标题、摘要、元信息
+======================================== */
+
+/* 文字区域 */
+#recent-posts .recent-post-info {
+  padding: 24px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* 标题 */
+#recent-posts .article-title {
+  font-size: 1.2em;
+  font-weight: 650;
+  line-height: 1.45;
+  color: #1f2d35;
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 标题链接 */
+#recent-posts .article-title a {
+  color: #1f2d35;
+  transition: color 0.2s ease;
+  text-decoration: none;
+  border: none;
+}
+
+#recent-posts .article-title a:hover {
+  color: #2677a3;
+}
+
+/* 摘要 */
+#recent-posts .content {
+  font-size: 0.9em;
+  line-height: 1.75;
+  color: #7a8b94;
+  margin-bottom: 20px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+/* 元信息区 - 固定在底部 */
+#recent-posts .article-meta-wrap {
+  font-size: 0.82em;
+  color: #a0aab0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #eef2f4;
+  margin-top: auto;
+}
+
+/* 元信息项 */
+#recent-posts .article-meta-wrap .article-meta-item {
+  margin-right: 0;
+}
+
+#recent-posts .article-meta-wrap .article-meta-item i {
+  margin-right: 5px;
+  color: #c0c8cc;
+}
+
+/* 日期 */
+#recent-posts .post-meta-date {
+  color: #a0aab0;
+}
+
+#recent-posts .post-meta-date i {
+  color: #c0c8cc;
+  margin-right: 5px;
+}
+
+/* 分类标签 */
+#recent-posts .article-meta-wrap .article-meta__categories {
+  color: #2677a3;
+  transition: color 0.2s ease;
+  text-decoration: none;
+}
+
+#recent-posts .article-meta-wrap .article-meta__categories:hover {
+  color: #3a8cb5;
+}
+
+/* 元信息分隔符 */
+#recent-posts .article-meta-wrap .article-meta-separator {
+  color: #dde2e5;
+  margin: 0 2px;
+}
+
+
+/* ========================================
+   6. 无封面图占位 - 极简底色，不破坏布局
+======================================== */
+
+/* 无封面时显示渐变占位区域 */
+#recent-posts .recent-post-item .recent-post-info.no-cover::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 40%, #a5c8e0 100%);
+  border-radius: 0;
+  flex-shrink: 0;
+}
+
+/* 微妙的装饰文字，提升无封面卡的辨识度 */
+#recent-posts .recent-post-item .recent-post-info.no-cover {
+  position: relative;
+}
+
+/* 无封面时标题区域增加上间距补偿 */
+#recent-posts .recent-post-item .recent-post-info.no-cover .article-title {
+  margin-top: 0;
+}
+
+
+/* ========================================
+   7. Hover 整体交互 - 克制上浮 + 阴影加深
+======================================== */
+
+#recent-posts .recent-post-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06),
+              0 12px 32px rgba(0, 0, 0, 0.05);
+}
+
+
+/* ========================================
+   8. 响应式 - 平板 1~2 列、移动端强制单栏
+======================================== */
+
+/* 平板端：窄屏时变为单列 */
+@media screen and (max-width: 1024px) {
+  #recent-posts .recent-post-items {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  #recent-posts .post_cover {
+    height: 180px;
+  }
+}
+
+/* 移动端 */
+@media screen and (max-width: 768px) {
+  #recent-posts .recent-post-items {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  #recent-posts .post_cover {
+    height: 160px;
+  }
+
+  #recent-posts .recent-post-info {
+    padding: 20px 22px 24px;
+  }
+
+  #recent-posts .article-title {
+    font-size: 1.1em;
+  }
+
+  #recent-posts .content {
+    -webkit-line-clamp: 2;
+  }
+
+  body {
+    font-size: 16px;
+  }
+
+  #article-container {
+    font-size: 16px;
+    line-height: 1.85;
+  }
+
+  #article-container h1 {
+    font-size: 1.7em;
+    margin-top: 2em;
+  }
+
+  #article-container h2 {
+    font-size: 1.4em;
+    margin-top: 1.8em;
+  }
+
+  #article-container h3 {
+    font-size: 1.2em;
+  }
+
+  #article-container h4 {
+    font-size: 1.08em;
+  }
+
+  #article-container p {
+    margin-top: 1.2em;
+    margin-bottom: 1.2em;
+  }
+
+  #article-container pre {
+    font-size: 0.88em;
+    padding: 16px 18px;
+  }
+
+  #post {
+    padding: 24px 20px;
+  }
+
+  .recent-post-item {
+    padding: 20px;
+  }
+}
+
+
+/* ========================================
+   9. 深色模式 - 柔和深灰，拒绝纯黑
+======================================== */
+
+/* 深色模式页面底色 */
+[data-theme="dark"] body {
+  background-color: #1a1d21;
+  color: #e5e7eb;
+}
+
+/* 深色模式卡片 */
+[data-theme="dark"] #recent-posts .recent-post-item {
+  background: #252830;
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2),
+              0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 深色模式 hover */
+[data-theme="dark"] #recent-posts .recent-post-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25),
+              0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* 深色模式标题 */
+[data-theme="dark"] #recent-posts .article-title a {
+  color: #e0e4e8;
+}
+
+[data-theme="dark"] #recent-posts .article-title a:hover {
+  color: #3a8cb5;
+}
+
+/* 深色模式摘要 */
+[data-theme="dark"] #recent-posts .content {
+  color: #8a949c;
+}
+
+/* 深色模式元信息 */
+[data-theme="dark"] #recent-posts .article-meta-wrap {
+  border-top-color: #363a44;
+  color: #6b7280;
+}
+
+[data-theme="dark"] #recent-posts .post-meta-date {
+  color: #6b7280;
+}
+
+[data-theme="dark"] #recent-posts .post-meta-date i {
+  color: #4a5560;
+}
+
+[data-theme="dark"] #recent-posts .article-meta-wrap .article-meta-separator {
+  color: #363a44;
+}
+
+/* 深色模式无封面占位 */
+[data-theme="dark"] #recent-posts .recent-post-item .recent-post-info.no-cover::before {
+  background: linear-gradient(135deg, #1e3a5f 0%, #1a2d45 50%, #162235 100%);
+}
+
+/* 深色模式分类链接 */
+[data-theme="dark"] #recent-posts .article-meta-wrap .article-meta__categories {
+  color: #3f8ab0;
+}
+
+[data-theme="dark"] #recent-posts .article-meta-wrap .article-meta__categories:hover {
+  color: #80c0e9;
+}
+
+
+/* ========================================
+   10. 其他卡片样式 - 侧边栏、文章页
+======================================== */
+
+/* 所有通用卡片 */
+.card-widget,
+#post {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.card-widget {
+  padding: 24px;
+}
+
+.card-widget:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06),
+              0 8px 24px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+
+/* ========================================
+   11.1 标题锚点清除 - 彻底隐藏 headerlink
+======================================== */
+
+/* 完全移除标题前面的锚点链接图标（beautify ::before 伪元素） */
+#article-container h1::before,
+#article-container h2::before,
+#article-container h3::before,
+#article-container h4::before,
+#article-container h5::before,
+#article-container h6::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* 移除 beautify 给标题加的左侧 padding */
+#article-container h1,
+#article-container h2,
+#article-container h3,
+#article-container h4,
+#article-container h5,
+#article-container h6 {
+  padding-left: 0 !important;
+}
+
+/* 隐藏 headerlink 锚点元素本身 */
+#article-container .headerlink {
+  display: none !important;
+}
+
+
+/* ========================================
+   11.2 文章正文字号颜色 - 放大字号、加深颜色
+======================================== */
+
+/* 正文 */
+#article-container {
+  font-size: 18px;
+  line-height: 2;
+  color: #1a1a1a;
+  font-weight: 400;
+}
+
+/* 段落 */
+#article-container p {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  line-height: 2;
+  color: #1a1a1a;
+}
+
+
+/* ========================================
+   11.3 标题层级样式 - 字号上调、字重克制
+======================================== */
+
+/* h1 */
+#article-container h1 {
+  font-size: 2em;
+  font-weight: 600;
+  color: #111827;
+  margin-top: 2.8em;
+  margin-bottom: 1em;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+/* h2 */
+#article-container h2 {
+  font-size: 1.65em;
+  font-weight: 600;
+  color: #111827;
+  margin-top: 2.5em;
+  margin-bottom: 0.8em;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid #e8eef1;
+  line-height: 1.4;
+}
+
+/* h3 */
+#article-container h3 {
+  font-size: 1.35em;
+  font-weight: 580;
+  color: #1f2937;
+  margin-top: 2em;
+  margin-bottom: 0.7em;
+  padding-left: 14px !important;
+  border-left: 3px solid #c8d8dc;
+  line-height: 1.5;
+}
+
+/* h4 */
+#article-container h4 {
+  font-size: 1.2em;
+  font-weight: 580;
+  color: #1f2937;
+  margin-top: 1.8em;
+  margin-bottom: 0.6em;
+}
+
+/* h5 */
+#article-container h5 {
+  font-size: 1.08em;
+  font-weight: 570;
+  color: #374151;
+  margin-top: 1.6em;
+  margin-bottom: 0.5em;
+}
+
+/* h6 */
+#article-container h6 {
+  font-size: 1.02em;
+  font-weight: 570;
+  color: #374151;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+
+/* ========================================
+   11.4 段落间距 - 拉开层次、呼吸感
+======================================== */
+
+#article-container ul,
+#article-container ol {
+  padding-left: 1.8em;
+  margin: 1.4em 0;
+}
+
+#article-container li {
+  margin: 0.7em 0;
+  line-height: 1.9;
+}
+
+#article-container blockquote {
+  margin: 2em 0;
+  padding: 18px 22px;
+  border-left: 3px solid #c8d8dc;
+  background: #f8fafb;
+  border-radius: 0 8px 8px 0;
+  color: #374151;
+  font-size: 0.95em;
+  line-height: 1.85;
+}
+
+#article-container hr {
+  margin: 3em 0;
+  border: none;
+  height: 1px;
+  background: #e8eef1;
+}
+
+
+/* ========================================
+   13. 配色系统 - 米白底色 + 低饱和主色
+======================================== */
+
+#article-container a {
+  color: #2563eb;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+#article-container a:hover {
+  color: #3a8cb5;
+  border-bottom-color: #c8d8dc;
+}
+
+#article-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.8em 0;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 0.95em;
+}
+
+#article-container thead {
+  background: #f0f4f6;
+}
+
+#article-container th {
+  padding: 12px 16px;
+  font-weight: 600;
+  color: #3d4f58;
+  text-align: left;
+  border-bottom: 2px solid #e0e8ec;
+}
+
+#article-container td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eef2f4;
+}
+
+#article-container tbody tr:hover {
+  background: #f8fafb;
+}
+
+::selection {
+  background: #d4e4e8;
+  color: #2c3e47;
+}
+
+
+/* ========================================
+   11.5 代码块微调 - 字号同步优化
+======================================== */
+
+#article-container code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.9em;
+  background: #f0f4f6;
+  color: #4a6a78;
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid #e4eaed;
+  font-weight: 500;
+}
+
+#article-container pre,
+#article-container .highlight {
+  border-radius: 10px;
+  background: #f5f7f9;
+  border: 1px solid #e4eaed;
+  box-shadow: none;
+  margin: 2em 0;
+  overflow: hidden;
+}
+
+#article-container pre {
+  padding: 20px 24px;
+  font-size: 0.92em;
+  line-height: 1.75;
+}
+
+.gutter {
+  background: #f0f3f5;
+  border-right: 1px solid #e4eaed;
+}
+
+.gutter pre {
+  color: #a0aab0;
+  font-size: 0.88em;
+}
+
+/* 代码高亮 */
+.highlight .keyword { color: #7a6bb0; }
+.highlight .string { color: #6a9e6a; }
+.highlight .comment { color: #a0aab0; font-style: italic; }
+.highlight .function { color: #2677a3; }
+.highlight .number { color: #c07a4a; }
+.highlight .title { color: #2677a3; }
+.highlight .params { color: #7a6bb0; }
+
+/* 深色模式代码块 */
+[data-theme="dark"] #article-container pre,
+[data-theme="dark"] #article-container .highlight,
+[data-theme="dark"] #article-container code {
+  background: #252830;
+  border-color: #363a44;
+  color: #d1d5db;
+}
+
+/* 深色模式链接 */
+[data-theme="dark"] #article-container a {
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .gutter {
+  background: #22252c;
+  border-color: #363a44;
+}
+
+[data-theme="dark"] .gutter pre {
+  color: #6b7280;
+}
+
+
+/* ========================================
+   15. 导航栏 - 轻量化、不抢焦点
+======================================== */
+
+#nav {
+  background: rgba(250, 248, 245, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+}
+
+.nav-fixed #nav {
+  background: rgba(250, 248, 245, 0.92);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+#nav a {
+  color: #5a6f78;
+  font-weight: 450;
+  transition: color 0.2s ease;
+}
+
+#nav a:hover {
+  color: #3d4f58;
+}
+
+#menus {
+  display: flex;
+  align-items: center;
+}
+
+#menus .menus_items {
+  display: flex;
+  order: 1;
+}
+
+#menus #search-button {
+  order: 2;
+}
+
+#menus #toggle-menu {
+  order: 3;
+}
+
+
+/* ========================================
+   16. 侧边栏 - 简约通透
+======================================== */
+
+.card-widget {
+  background: rgba(255, 255, 255, 0.8);
+  margin-bottom: 16px;
+}
+
+.card-info {
+  background: linear-gradient(135deg, #f0f4f6 0%, #e8eef1 100%) !important;
+  border: 1px solid #e0e8ec;
+}
+
+.card-info .author-info__name {
+  color: #2c3e47 !important;
+  font-weight: 600;
+}
+
+.card-info .author-info__description {
+  color: #7a8b94 !important;
+}
+
+.item-headline {
+  font-size: 1.15em;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eef2f4;
+}
+
+.item-headline span {
+  color: #1f2937;
+}
+
+.item-headline i {
+  color: #2677a3;
+}
+
+.card-tag-cloud a {
+  display: inline-block;
+  padding: 4px 12px;
+  margin: 3px 4px;
+  background: #f5f7f9;
+  color: #5a6f78;
+  font-size: 0.85em;
+  border-radius: 6px;
+  transition: background 0.2s ease, color 0.2s ease;
+  border: 1px solid #eef2f4;
+}
+
+.card-tag-cloud a:hover {
+  background: #e8eef1;
+  color: #3d4f58;
+}
+
+.card-category-list a {
+  color: #5a6f78;
+  transition: color 0.2s ease;
+}
+
+.card-category-list a:hover {
+  color: #3d4f58;
+}
+
+.card-announcement {
+  background: #f8fafb !important;
+  border-left: 3px solid #c8d8dc !important;
+  border-radius: 0 8px 8px 0 !important;
+}
+
+
+/* ========================================
+   16.1 右侧目录样式修复 - 字号与颜色
+======================================== */
+
+/* 目录容器 */
+#card-toc .toc-content {
+  font-size: 1em;
+  line-height: 1.8;
+  color: #1f2937;
+}
+
+/* 目录链接 */
+#aside-content #card-toc .toc-content .toc-link {
+  color: #1f2937;
+  font-size: 1em;
+  padding: 4px 12px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+#aside-content #card-toc .toc-content .toc-link:hover {
+  color: #fff;
+  background: #2677a3;
+}
+
+/* 目录当前激活项 */
+#aside-content #card-toc .toc-content .toc-link.active {
+  background: #2677a3;
+  color: #fff;
+  font-weight: 550;
+}
+
+/* 目录编号 */
+#card-toc .toc-number {
+  color: #6b7280;
+  font-size: 0.9em;
+}
+
+/* 目录文字 */
+#card-toc .toc-text {
+  color: #1f2937;
+}
+
+/* 目录子层级 */
+#card-toc .toc-child .toc-text {
+  color: #4b5563;
+}
+
+#card-toc .toc-child {
+  border-left-color: #d1d5db;
+}
+
+/* 目录百分比 */
+#card-toc .toc-percentage {
+  color: #9ca3af;
+  font-size: 0.9em;
+}
+
+/* 深色模式目录 */
+[data-theme="dark"] #aside-content #card-toc .toc-content .toc-link {
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] #aside-content #card-toc .toc-content .toc-link:hover {
+  color: #fff;
+  background: #2677a3;
+}
+
+[data-theme="dark"] #aside-content #card-toc .toc-content .toc-link.active {
+  background: #2677a3;
+  color: #fff;
+}
+
+[data-theme="dark"] #card-toc .toc-number {
+  color: #6b7280;
+}
+
+[data-theme="dark"] #card-toc .toc-text {
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] #card-toc .toc-child .toc-text {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .item-headline {
+  border-bottom-color: #363a44;
+}
+
+[data-theme="dark"] .item-headline span {
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .item-headline i {
+  color: #5dade0;
+}
+
+
+/* ========================================
+   17. 文章详情页 - 专注阅读
+======================================== */
+
+#post {
+  padding: 40px 48px;
+  margin-bottom: 24px;
+}
+
+@media screen and (max-width: 768px) {
+  #post {
+    padding: 24px 20px;
+  }
+}
+
+#post-title {
+  font-size: 2em;
+  font-weight: 700;
+  color: #1f2d35;
+  line-height: 1.35;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+#post-meta {
+  color: #8a9ba4;
+  font-size: 0.9em;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eef2f4;
+}
+
+#post-meta a {
+  color: #2677a3;
+  transition: color 0.2s ease;
+}
+
+#post-meta a:hover {
+  color: #3d4f58;
+}
+
+#article-container {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+}
+
+#article-container img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin: 1.5em 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.25s ease;
+}
+
+#article-container img:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+
+/* ========================================
+   18. 交互 - 极轻过渡、克制柔和
+======================================== */
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d0d8dc;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b8c4c8;
+}
+
+/* 按钮 */
+.button--animated {
+  background: #2677a3 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 4px rgba(92, 124, 138, 0.2) !important;
+  transition: background 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.button--animated:hover {
+  background: #3a8cb5 !important;
+  box-shadow: 0 2px 8px rgba(92, 124, 138, 0.25) !important;
+}
+
+/* 分页器 */
+.pagination {
+  margin-top: 40px;
+}
+
+.pagination .page-number,
+.pagination .extend {
+  border-radius: 8px;
+  margin: 0 3px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pagination .page-number.current,
+.pagination .extend:hover {
+  background: #2677a3 !important;
+  color: white !important;
+}
+
+/* 回到顶部 */
+#go-up {
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+/* 阅读进度条 */
+#page-header .progress-bar-inner {
+  background: #2677a3 !important;
+  height: 2px !important;
+}
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: 0.85em;
+  color: #8a9ba4;
+}
+
+.breadcrumb a {
+  color: #2677a3;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb a:hover {
+  color: #3d4f58;
+}
+
+
+/* ========================================
+   19. 深色模式 - 全局补充
+======================================== */
+
+[data-theme="dark"] .card-widget,
+[data-theme="dark"] #post {
+  background: rgba(35, 38, 45, 0.85);
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15),
+              0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] #article-container {
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] #article-container p {
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] #article-container blockquote {
+  color: #d1d5db;
+}
+
+[data-theme="dark"] #article-container h1,
+[data-theme="dark"] #article-container h2 {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] #article-container h3,
+[data-theme="dark"] #article-container h4 {
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] #article-container h5,
+[data-theme="dark"] #article-container h6 {
+  color: #d1d5db;
+}
+
+[data-theme="dark"] #article-container h2 {
+  border-bottom-color: #363a44;
+}
+
+[data-theme="dark"] #article-container h3 {
+  border-left-color: #4a5560;
+}
+
+[data-theme="dark"] #article-container blockquote {
+  background: #252830;
+  border-left-color: #4a5560;
+  color: #a0aab0;
+}
+
+[data-theme="dark"] #article-container table thead {
+  background: #252830;
+}
+
+[data-theme="dark"] #article-container th,
+[data-theme="dark"] #article-container td {
+  border-bottom-color: #363a44;
+}
+
+[data-theme="dark"] #nav {
+  background: rgba(26, 29, 33, 0.9);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .card-info {
+  background: linear-gradient(135deg, #252830 0%, #2a2d35 100%) !important;
+  border-color: #363a44;
+}
+
+[data-theme="dark"] .card-tag-cloud a {
+  background: #2a2d35;
+  border-color: #363a44;
+  color: #a0aab0;
+}
+
+[data-theme="dark"] .card-tag-cloud a:hover {
+  background: #363a44;
+  color: #c8cdd3;
+}
+
+[data-theme="dark"] ::selection {
+  background: #3a4a54;
+  color: #e0e4e8;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #4a5560;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #5a6570;
+}
+
+[data-theme="dark"] .item-headline {
+  border-bottom-color: #363a44;
+}
+
+
+/* ========================================
+   20. 页脚 - 简约
+======================================== */
+
+#footer {
+  background: transparent;
+  border-top: 1px solid #eef2f4;
+  padding: 32px 0;
+  margin-top: 40px;
+}
+
+[data-theme="dark"] #footer {
+  border-top-color: #363a44;
+}
+
+
+/* ========================================
+   21. 搜索框 - 统一风格
+======================================== */
+
+#local-search-input {
+  border-radius: 8px;
+  border: 1px solid #e0e8ec;
+  background: #f8fafb;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#local-search-input:focus {
+  border-color: #2677a3;
+  box-shadow: 0 0 0 3px rgba(92, 124, 138, 0.1);
+}
+
+[data-theme="dark"] #local-search-input {
+  background: #252830;
+  border-color: #363a44;
+}
+
+[data-theme="dark"] #local-search-input:focus {
+  border-color: #2677a3;
+  box-shadow: 0 0 0 3px rgba(92, 124, 138, 0.15);
+}

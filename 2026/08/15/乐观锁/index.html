@@ -1,0 +1,307 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>乐观锁 | Planck's Blog</title><meta name="author" content="Planck"><meta name="copyright" content="Planck"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#fafbfc"><meta name="description" content="乐观锁核心思想乐观锁对并发冲突持乐观态度：默认认为多数情况下不会发生数据冲突，因此操作前不加锁，直接执行读写操作；只有在最终提交更新时，才校验数据是否被其他操作修改过。如果检测到冲突，则返回失败，由业务层决定重试或放弃。  注意：乐观锁本质不是 “锁”，而是一种无锁的并发控制方案。  常见实现版本号机制（数据库最常用）在数据表中增加一个 version 字段，记录数据的版本号。每次更新数据时，必须">
+<meta property="og:type" content="article">
+<meta property="og:title" content="乐观锁">
+<meta property="og:url" content="https://planck12-06.github.io/2026/08/15/%E4%B9%90%E8%A7%82%E9%94%81/index.html">
+<meta property="og:site_name" content="Planck&#39;s Blog">
+<meta property="og:description" content="乐观锁核心思想乐观锁对并发冲突持乐观态度：默认认为多数情况下不会发生数据冲突，因此操作前不加锁，直接执行读写操作；只有在最终提交更新时，才校验数据是否被其他操作修改过。如果检测到冲突，则返回失败，由业务层决定重试或放弃。  注意：乐观锁本质不是 “锁”，而是一种无锁的并发控制方案。  常见实现版本号机制（数据库最常用）在数据表中增加一个 version 字段，记录数据的版本号。每次更新数据时，必须">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/Planck12-06.png">
+<meta property="article:published_time" content="2026-08-15T13:39:41.000Z">
+<meta property="article:modified_time" content="2026-08-15T14:36:53.654Z">
+<meta property="article:author" content="Planck">
+<meta property="article:tag" content="乐观锁">
+<meta property="article:tag" content="CAS">
+<meta property="article:tag" content="版本号机制">
+<meta property="article:tag" content="并发控制">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/Planck12-06.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "乐观锁",
+  "url": "https://planck12-06.github.io/2026/08/15/%E4%B9%90%E8%A7%82%E9%94%81/",
+  "image": "https://github.com/Planck12-06.png",
+  "datePublished": "2026-08-15T13:39:41.000Z",
+  "dateModified": "2026-08-15T14:36:53.654Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Planck",
+      "url": "https://planck12-06.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://planck12-06.github.io/2026/08/15/%E4%B9%90%E8%A7%82%E9%94%81/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1a1d21')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fafbfc')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&amp;family=Playfair+Display:wght@400;700&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":3,"unescape":true,"pagination":{"enable":true,"hitsPerPage":10},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '乐观锁',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div class="bg-animation" id="web_bg" style="background-image: url(/img/atri-sunflower.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/Planck12-06.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fa-fw fab fa-github"></i><span> GitHub</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Planck's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">乐观锁</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fa-fw fab fa-github"></i><span> GitHub</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">乐观锁</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-15T13:39:41.000Z" title="发表于 2026-08-15 21:39:41">2026-08-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-15T14:36:53.654Z" title="更新于 2026-08-15 22:36:53">2026-08-15</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/">并发编程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读大概需要时长:</span><span>4分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="乐观锁"><a href="#乐观锁" class="headerlink" title="乐观锁"></a>乐观锁</h1><h2 id="核心思想"><a href="#核心思想" class="headerlink" title="核心思想"></a>核心思想</h2><p>乐观锁对并发冲突持乐观态度：默认认为多数情况下不会发生数据冲突，因此操作前不加锁，直接执行读写操作；只有在最终提交更新时，才校验数据是否被其他操作修改过。如果检测到冲突，则返回失败，由业务层决定重试或放弃。</p>
+<blockquote>
+<p><strong>注意</strong>：乐观锁本质不是 “锁”，而是一种无锁的并发控制方案。</p>
+</blockquote>
+<h2 id="常见实现"><a href="#常见实现" class="headerlink" title="常见实现"></a>常见实现</h2><h3 id="版本号机制（数据库最常用）"><a href="#版本号机制（数据库最常用）" class="headerlink" title="版本号机制（数据库最常用）"></a>版本号机制（数据库最常用）</h3><p>在数据表中增加一个 <code>version</code> 字段，记录数据的版本号。每次更新数据时，必须校验当前版本号与读取时的版本号是否一致，一致才允许更新，并将版本号 + 1。</p>
+<h4 id="SQL-示例"><a href="#SQL-示例" class="headerlink" title="SQL 示例"></a>SQL 示例</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 读取数据时拿到 version = 1</span></span><br><span class="line"><span class="keyword">UPDATE</span> goods </span><br><span class="line"><span class="keyword">SET</span> stock <span class="operator">=</span> stock <span class="operator">-</span> <span class="number">1</span>, version <span class="operator">=</span> version <span class="operator">+</span> <span class="number">1</span> </span><br><span class="line"><span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1001</span> <span class="keyword">AND</span> version <span class="operator">=</span> <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p>通过判断受影响行数是否为 0，即可知道是否更新成功。如果为 0，说明在读取数据到提交更新期间，其他事务已经修改过该数据，当前更新发生冲突。</p>
+<h4 id="Java-实现示例"><a href="#Java-实现示例" class="headerlink" title="Java 实现示例"></a>Java 实现示例</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StockService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> StockMapper stockMapper;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">deductStock</span><span class="params">(Long goodsId)</span> &#123;</span><br><span class="line">        <span class="comment">// 1. 查询商品库存及版本号</span></span><br><span class="line">        <span class="type">Stock</span> <span class="variable">stock</span> <span class="operator">=</span> stockMapper.selectById(goodsId);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2. 执行扣减：版本号作为条件，扣减成功后版本号 + 1</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">affectedRows</span> <span class="operator">=</span> stockMapper.deductStock(goodsId, stock.getVersion());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 3. 通过受影响行数判断是否更新成功</span></span><br><span class="line">        <span class="keyword">return</span> affectedRows &gt; <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Mapper 接口</span></span><br><span class="line"><span class="meta">@Update(&quot;UPDATE stock SET count = count - 1, version = version + 1 &quot; +</span></span><br><span class="line"><span class="meta">        &quot;WHERE goods_id = #&#123;goodsId&#125; AND version = #&#123;version&#125; AND count &gt; 0&quot;)</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">deductStock</span><span class="params">(<span class="meta">@Param(&quot;goodsId&quot;)</span> Long goodsId, <span class="meta">@Param(&quot;version&quot;)</span> Integer version)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="CAS-算法（编程层面最常用）"><a href="#CAS-算法（编程层面最常用）" class="headerlink" title="CAS 算法（编程层面最常用）"></a>CAS 算法（编程层面最常用）</h3><p>全称 <strong>Compare-And-Swap（比较并交换）</strong>，是 CPU 级别的原子指令。它在更新值时，先比较当前值是否等于预期的旧值，相等才用新值覆盖，否则不操作。</p>
+<p>Java 中的 <code>AtomicInteger</code>、<code>AtomicLong</code> 等原子类，就是基于 CAS 实现的乐观锁。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CASDemo</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">AtomicInteger</span> <span class="variable">count</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 自增操作底层使用 CAS</span></span><br><span class="line">        count.incrementAndGet();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//  compareAndSet(oldValue, newValue)</span></span><br><span class="line">        <span class="type">boolean</span> <span class="variable">success</span> <span class="operator">=</span> count.compareAndSet(<span class="number">1</span>, <span class="number">10</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;CAS 是否成功：&quot;</span> + success);</span><br><span class="line">        System.out.println(<span class="string">&quot;当前值：&quot;</span> + count.get());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="执行流程"><a href="#执行流程" class="headerlink" title="执行流程"></a>执行流程</h2><ol>
+<li>读取共享数据的当前状态（同时记录版本号 &#x2F; 旧值）</li>
+<li>基于读取的数据执行业务计算</li>
+<li>提交更新时，校验数据是否被修改</li>
+<li>校验通过则更新成功，校验失败则重试 &#x2F; 回滚</li>
+</ol>
+<h2 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h2><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>优点</td>
+<td>
+<ul>
+<li>无锁阻塞，并发性能高</li>
+<li>没有死锁问题</li>
+<li>读操作完全无开销</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>缺点</td>
+<td>
+<ul>
+<li>高冲突场景下会频繁重试，反而增加系统开销</li>
+<li>CAS 存在经典的 ABA 问题：值被改了又改回来，无法感知中间变更</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="ABA-问题"><a href="#ABA-问题" class="headerlink" title="ABA 问题"></a>ABA 问题</h2><h3 id="什么是-ABA-问题"><a href="#什么是-ABA-问题" class="headerlink" title="什么是 ABA 问题"></a>什么是 ABA 问题</h3><p>假设线程 A 读取变量值为 A，准备将其改为 B。在这期间，线程 B 将变量从 A 改为 B，又改回 A。当线程 A 执行 CAS 操作时，发现变量值仍然是 A，于是认为没有变化，成功更新为 B。但实际上变量已经被修改过，这就是 ABA 问题。</p>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>使用 <strong>版本号（Version）</strong> 或 <strong>时间戳（Timestamp）</strong> 来标识数据的修改次数，CAS 时不仅比较值，还比较版本号是否一致。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AtomicStampedReference 通过版本号解决 ABA 问题</span></span><br><span class="line">AtomicStampedReference&lt;Integer&gt; value = <span class="keyword">new</span> <span class="title class_">AtomicStampedReference</span>&lt;&gt;(<span class="number">100</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">int</span>[] stampHolder = <span class="keyword">new</span> <span class="title class_">int</span>[<span class="number">1</span>];</span><br><span class="line"><span class="type">Integer</span> <span class="variable">oldValue</span> <span class="operator">=</span> value.get(stampHolder);</span><br><span class="line"><span class="type">int</span> <span class="variable">oldStamp</span> <span class="operator">=</span> stampHolder[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 更新时同时比较值和版本号</span></span><br><span class="line">value.compareAndSet(oldValue, <span class="number">200</span>, oldStamp, oldStamp + <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="适用场景"><a href="#适用场景" class="headerlink" title="适用场景"></a>适用场景</h2><ul>
+<li>读多写少的业务场景</li>
+<li>冲突概率低的场景</li>
+<li>对响应速度要求高的场景</li>
+<li>例如：商品浏览量更新、用户信息修改、库存查询</li>
+</ul>
+<hr>
+<h1 id="乐观锁与悲观锁对比"><a href="#乐观锁与悲观锁对比" class="headerlink" title="乐观锁与悲观锁对比"></a>乐观锁与悲观锁对比</h1><table>
+<thead>
+<tr>
+<th align="left">对比维度</th>
+<th align="left">悲观锁</th>
+<th align="left">乐观锁</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">核心假设</td>
+<td align="left">并发冲突一定会发生</td>
+<td align="left">并发冲突很少发生</td>
+</tr>
+<tr>
+<td align="left">加锁方式</td>
+<td align="left">操作前加锁，独占资源</td>
+<td align="left">操作前不加锁，提交时校验</td>
+</tr>
+<tr>
+<td align="left">冲突处理</td>
+<td align="left">冲突时阻塞等待</td>
+<td align="left">冲突时重试 &#x2F; 失败回滚</td>
+</tr>
+<tr>
+<td align="left">性能开销</td>
+<td align="left">加锁解锁开销大，阻塞耗时</td>
+<td align="left">无锁开销，但冲突重试有消耗</td>
+</tr>
+<tr>
+<td align="left">数据一致性</td>
+<td align="left">强一致性，隔离性好</td>
+<td align="left">最终一致性，依赖重试机制</td>
+</tr>
+<tr>
+<td align="left">典型问题</td>
+<td align="left">死锁、锁饥饿、长事务锁占用</td>
+<td align="left">ABA 问题、高冲突下重试风暴</td>
+</tr>
+<tr>
+<td align="left">典型实现</td>
+<td align="left"><code>SELECT ... FOR UPDATE</code>、<code>synchronized</code></td>
+<td align="left">版本号机制、CAS 原子类</td>
+</tr>
+</tbody></table>
+<h2 id="实际作用总结"><a href="#实际作用总结" class="headerlink" title="实际作用总结"></a>实际作用总结</h2><p>两者最终都是为了保证并发环境下共享数据的正确性，但适用场景互补：</p>
+<ul>
+<li><strong>悲观锁</strong>：优先保证数据安全，牺牲部分性能，适合对数据一致性要求极高、写操作密集的业务</li>
+<li><strong>乐观锁</strong>：优先保证系统性能，在低冲突场景下大幅提升并发吞吐量，适合读多写少、对响应速度要求高的业务</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://planck12-06.github.io">Planck</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://planck12-06.github.io/2026/08/15/%E4%B9%90%E8%A7%82%E9%94%81/">https://planck12-06.github.io/2026/08/15/%E4%B9%90%E8%A7%82%E9%94%81/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://planck12-06.github.io" target="_blank">Planck's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E4%B9%90%E8%A7%82%E9%94%81/">乐观锁</a><a class="post-meta__tags" href="/tags/CAS/">CAS</a><a class="post-meta__tags" href="/tags/%E7%89%88%E6%9C%AC%E5%8F%B7%E6%9C%BA%E5%88%B6/">版本号机制</a><a class="post-meta__tags" href="/tags/%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6/">并发控制</a></div><div class="post-share"><div class="social-share" data-image="https://github.com/Planck12-06.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/15/%E6%82%B2%E8%A7%82%E9%94%81/" title="悲观锁"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">悲观锁</div></div><div class="info-2"><div class="info-item-1">悲观锁核心思想悲观锁对并发冲突持保守悲观的态度：默认认为只要有多个操作同时访问共享资源，就一定会发生数据冲突。因此在操作数据之前，必须先加锁，确保同一时间只有一个操作能访问该资源，其他操作阻塞等待锁释放。 常见实现数据库层面关系型数据库中的行锁、表锁、读锁（共享锁）、写锁（排他锁）都属于悲观锁实现。最典型的是 MySQL InnoDB 引擎的 SELECT ... FOR UPDATE 语句，会对查询到的行加排他锁。 12345-- 开启事务并给指定行加排他锁BEGIN;SELECT * FROM account WHERE id = 1 FOR UPDATE;UPDATE account SET balance = balance - 100 WHERE id = 1;COMMIT;  编程语言层面Java 中的 synchronized 关键字、ReentrantLock 重入锁，本质都是悲观锁。 123456789101112131415161718192021public class PessimisticLockDemo &#123;    private int co...</div></div></div></a><a class="pagination-related" href="/2026/08/09/Spring-Task/" title="Spring Task 定时任务"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Spring Task 定时任务</div></div><div class="info-2"><div class="info-item-1">Spring Task 定时任务Spring Task 是 Spring 框架提供的任务调度工具，可以按照约定的时间自动执行某个代码逻辑。 特点   特点 说明    轻量级 无需引入额外依赖，Spring Boot 已内置   简单易用 通过注解即可配置定时任务   Cron 表达式 支持灵活的时间调度规则   快速开始第 1 步：开启定时任务功能在启动类上添加 @EnableScheduling 注解： 1234567@EnableScheduling@SpringBootApplicationpublic class Application &#123;    public static void main(String[] args) &#123;        SpringApplication.run(Application.class, args);    &#125;&#125;  第 2 步：编写定时任务方法123456789@Componentpublic class MyTask &#123;    // 每 5 秒执行一次    @Scheduled(cr...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/15/%E6%82%B2%E8%A7%82%E9%94%81/" title="悲观锁"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-15</div><div class="info-item-2">悲观锁</div></div><div class="info-2"><div class="info-item-1">悲观锁核心思想悲观锁对并发冲突持保守悲观的态度：默认认为只要有多个操作同时访问共享资源，就一定会发生数据冲突。因此在操作数据之前，必须先加锁，确保同一时间只有一个操作能访问该资源，其他操作阻塞等待锁释放。 常见实现数据库层面关系型数据库中的行锁、表锁、读锁（共享锁）、写锁（排他锁）都属于悲观锁实现。最典型的是 MySQL InnoDB 引擎的 SELECT ... FOR UPDATE 语句，会对查询到的行加排他锁。 12345-- 开启事务并给指定行加排他锁BEGIN;SELECT * FROM account WHERE id = 1 FOR UPDATE;UPDATE account SET balance = balance - 100 WHERE id = 1;COMMIT;  编程语言层面Java 中的 synchronized 关键字、ReentrantLock 重入锁，本质都是悲观锁。 123456789101112131415161718192021public class PessimisticLockDemo &#123;    private int co...</div></div></div></a><a class="pagination-related" href="/2026/08/17/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" title="消息队列"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-17</div><div class="info-item-2">消息队列</div></div><div class="info-2"><div class="info-item-1">消息队列 本文以 优惠券秒杀 场景为主线，沿着 悲观锁 → 阻塞队列 → Redis Stream 消息队列 的方案演进路径，理解消息队列解决了什么问题、以及如何落地使用。  一、秒杀场景与方案演进概览秒杀的核心挑战：高并发下防止超卖、保证一人一单，同时不让数据库被瞬时流量打垮。 围绕这一挑战，方案经历了三次演进：    方案 核心思路 主要缺陷    悲观锁（同步） 加锁串行化下单，数据库层校验 集群下锁失效、全流程同步阻塞，性能差   阻塞队列（JVM 异步） Lua 预检 + JVM 内存队列异步落库 宕机丢消息、无 ACK、有内存溢出风险   Redis Stream（最终方案） Lua 预检 + Redis 消息队列异步落库 实现略复杂，但可靠、可扩展    二、方案一：悲观锁实现优惠券秒杀1. 实现思路最直观的做法：在数据库层面完成所有校验（时间、库存、一人一单），用 悲观锁（synchronized，基于用户 ID 加锁）保证同一用户的并发请求串行执行，再通过事务方法落库。 2. 核心代码123456789101112131415161718192021222324...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/Planck12-06.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Planck</div><div class="author-info-description">记录全栈+AI学习过程的博客</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到Planck的技术Blog🚀🚀</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B9%90%E8%A7%82%E9%94%81"><span class="toc-number">1.</span> <span class="toc-text">乐观锁</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">1.1.</span> <span class="toc-text">核心思想</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.2.</span> <span class="toc-text">常见实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%8F%B7%E6%9C%BA%E5%88%B6%EF%BC%88%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9C%80%E5%B8%B8%E7%94%A8%EF%BC%89"><span class="toc-number">1.2.1.</span> <span class="toc-text">版本号机制（数据库最常用）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#SQL-%E7%A4%BA%E4%BE%8B"><span class="toc-number">1.2.1.1.</span> <span class="toc-text">SQL 示例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Java-%E5%AE%9E%E7%8E%B0%E7%A4%BA%E4%BE%8B"><span class="toc-number">1.2.1.2.</span> <span class="toc-text">Java 实现示例</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CAS-%E7%AE%97%E6%B3%95%EF%BC%88%E7%BC%96%E7%A8%8B%E5%B1%82%E9%9D%A2%E6%9C%80%E5%B8%B8%E7%94%A8%EF%BC%89"><span class="toc-number">1.2.2.</span> <span class="toc-text">CAS 算法（编程层面最常用）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="toc-number">1.3.</span> <span class="toc-text">执行流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">1.4.</span> <span class="toc-text">优缺点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ABA-%E9%97%AE%E9%A2%98"><span class="toc-number">1.5.</span> <span class="toc-text">ABA 问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-ABA-%E9%97%AE%E9%A2%98"><span class="toc-number">1.5.1.</span> <span class="toc-text">什么是 ABA 问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">1.5.2.</span> <span class="toc-text">解决方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">1.6.</span> <span class="toc-text">适用场景</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B9%90%E8%A7%82%E9%94%81%E4%B8%8E%E6%82%B2%E8%A7%82%E9%94%81%E5%AF%B9%E6%AF%94"><span class="toc-number">2.</span> <span class="toc-text">乐观锁与悲观锁对比</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E4%BD%9C%E7%94%A8%E6%80%BB%E7%BB%93"><span class="toc-number">2.1.</span> <span class="toc-text">实际作用总结</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/19/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" title="分布式缓存">分布式缓存</a><time datetime="2026-08-19T08:51:10.000Z" title="发表于 2026-08-19 16:51:10">2026-08-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/18/Feed%E6%B5%81/" title="Feed流">Feed流</a><time datetime="2026-08-18T08:59:36.000Z" title="发表于 2026-08-18 16:59:36">2026-08-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/17/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" title="消息队列">消息队列</a><time datetime="2026-08-17T12:54:09.000Z" title="发表于 2026-08-17 20:54:09">2026-08-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" title="分布式锁">分布式锁</a><time datetime="2026-08-16T01:43:26.000Z" title="发表于 2026-08-16 09:43:26">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/15/%E6%82%B2%E8%A7%82%E9%94%81/" title="悲观锁">悲观锁</a><time datetime="2026-08-15T13:39:57.000Z" title="发表于 2026-08-15 21:39:57">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Planck</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.5"></script></div></div></body></html>

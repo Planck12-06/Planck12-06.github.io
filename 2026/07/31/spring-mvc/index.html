@@ -1,0 +1,196 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>spring mvc | Planck's Blog</title><meta name="author" content="Planck"><meta name="copyright" content="Planck"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#fafbfc"><meta name="description" content="在 WebMvcConfiguration 中扩展Spring MVC的消息转换器，统一对日期类型进行格式化处理 12345678910protected void extendMessageConverters(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters) &#123;    log.info(&quot;开始扩展消息转换器...&amp;q">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring mvc">
+<meta property="og:url" content="https://planck12-06.github.io/2026/07/31/spring-mvc/index.html">
+<meta property="og:site_name" content="Planck&#39;s Blog">
+<meta property="og:description" content="在 WebMvcConfiguration 中扩展Spring MVC的消息转换器，统一对日期类型进行格式化处理 12345678910protected void extendMessageConverters(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters) &#123;    log.info(&quot;开始扩展消息转换器...&amp;q">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/Planck12-06.png">
+<meta property="article:published_time" content="2026-07-31T09:33:18.000Z">
+<meta property="article:modified_time" content="2026-08-01T00:44:04.251Z">
+<meta property="article:author" content="Planck">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/Planck12-06.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "spring mvc",
+  "url": "https://planck12-06.github.io/2026/07/31/spring-mvc/",
+  "image": "https://github.com/Planck12-06.png",
+  "datePublished": "2026-07-31T09:33:18.000Z",
+  "dateModified": "2026-08-01T00:44:04.251Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Planck",
+      "url": "https://planck12-06.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://planck12-06.github.io/2026/07/31/spring-mvc/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1a1d21')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fafbfc')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&amp;family=Playfair+Display:wght@400;700&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":3,"unescape":true,"pagination":{"enable":true,"hitsPerPage":10},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'spring mvc',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div class="bg-animation" id="web_bg" style="background-image: url(/img/atri-sunflower.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/Planck12-06.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fa-fw fab fa-github"></i><span> GitHub</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Planck's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">spring mvc</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fa-fw fab fa-github"></i><span> GitHub</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">spring mvc</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-31T09:33:18.000Z" title="发表于 2026-07-31 17:33:18">2026-07-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-01T00:44:04.251Z" title="更新于 2026-08-01 08:44:04">2026-08-01</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">229</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读大概需要时长:</span><span>1分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>在 WebMvcConfiguration 中扩展Spring MVC的消息转换器，统一对日期类型进行格式化处理</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">extendMessageConverters</span><span class="params">(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters)</span> &#123;</span><br><span class="line">    log.info(<span class="string">&quot;开始扩展消息转换器...&quot;</span>);</span><br><span class="line">    <span class="comment">//创建一个消息转化器对象    </span></span><br><span class="line">    <span class="type">MappingJackson2HttpMessageConverter</span> <span class="variable">converter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MappingJackson2HttpMessageConverter</span>();    </span><br><span class="line">    <span class="comment">//设置对象转换器，可以将Java对象转为json字符串    </span></span><br><span class="line">    converter.setObjectMapper(<span class="keyword">new</span> <span class="title class_">JacksonObjectMapper</span>());</span><br><span class="line">    <span class="comment">//将我们自己的转换器放入spring MVC框架的容器中  </span></span><br><span class="line">    converters.add(<span class="number">0</span>,converter);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><code>BeanUtils</code>类中的copyProperties方法，可以将一个对象的属性值拷贝到另一个对象中，但是如果两个对象的属性名称相同，则会进行覆盖。</p>
+<p><code>BaseContext</code>类中声明ThreadLocal变量，用于存储当前线程的上下文信息，如用户信息、请求信息等。并且提供了get方法用于获取当前线程的上下文信息和set方法用于设置当前线程的上下文信息。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://planck12-06.github.io">Planck</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://planck12-06.github.io/2026/07/31/spring-mvc/">https://planck12-06.github.io/2026/07/31/spring-mvc/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://planck12-06.github.io" target="_blank">Planck's Blog</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://github.com/Planck12-06.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/01/AOP/" title="AOP 面向切面编程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">AOP 面向切面编程</div></div><div class="info-2"><div class="info-item-1">AOP 概述AOP：Aspect Oriented Programming（面向切面编程、面向方面编程），面向切面编程就是面向特定方法编程。 优势   优势 说明    减少重复代码 不需要在业务方法中定义大量重复性代码，只需将重复代码抽取到 AOP 程序中即可   代码无侵入 基于 AOP 实现业务功能时，对原有业务代码无任何侵入，无需修改业务代码   提高开发效率 通用逻辑统一管理，减少重复劳动   维护方便 修改通用逻辑只需调整一处   核心概念   概念 英文名 说明    连接点JoinPoint可以被 AOP 控制的方法（暗含方法执行时的相关信息） 通知Advice重复的逻辑，即需要增强的功能代码 切入点PointCut匹配连接点的条件，通知仅会在切入点方法执行时被应用 切面Aspect切入点 + 通知的组合 目标对象Target通知所应用的对象     Spring AOP 通知类型   注解 名称 说明    @Around环绕通知此注解标注的通知方法在目标方法前、后都被执行 @Before前置通知此注解标注的通知方法在目标方法前被执行 @After后置通知此注解...</div></div></div></a><a class="pagination-related" href="/2026/07/28/%E7%99%BB%E5%BD%95%E9%AA%8C%E8%AF%81/" title="登录验证"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">登录验证</div></div><div class="info-2"><div class="info-item-1">登录校验登录校验指的是在服务端接收到浏览器发送的请求时，对请求的用户身份进行校验，以确定该用户是否有权限访问该资源。 HTTP 协议的无状态性 前提：HTTP 协议是无状态协议  所谓无状态，指的是每一次请求都是独立的，下一次请求并不会携带上一次请求的数据。 浏览器与服务器之间基于 HTTP 协议交互，这就意味着：通过浏览器访问登录接口完成登录操作后，再执行其他业务操作时，服务器并不知道该用户是否已经登录。因为 HTTP 协议的无状态特性，两次请求之间是独立的，无法判断用户是否已登录。  会话技术会话指的是服务器与浏览器之间的一次连接。在一次会话中可以包含多次请求和响应。 会话跟踪会话跟踪是一种维护浏览器状态的方法，服务器需要识别多次请求是否来自同一浏览器，以便在同一次会话的多次请求间共享数据。 会话跟踪技术对比   技术 类型 存储位置 说明    Cookie 客户端会话跟踪 浏览器端 数据存储在客户端浏览器中   Session 服务端会话跟踪 服务器端 数据存储在服务端   令牌技术 无状态认证 客户端&#x2F;服务端均可 基于 Token 的身份验证    Cooki...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/Planck12-06.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Planck</div><div class="author-info-description">记录全栈+AI学习过程的博客</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到Planck的技术Blog🚀🚀</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/19/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" title="分布式缓存">分布式缓存</a><time datetime="2026-08-19T08:51:10.000Z" title="发表于 2026-08-19 16:51:10">2026-08-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/18/Feed%E6%B5%81/" title="Feed流">Feed流</a><time datetime="2026-08-18T08:59:36.000Z" title="发表于 2026-08-18 16:59:36">2026-08-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/17/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" title="消息队列">消息队列</a><time datetime="2026-08-17T12:54:09.000Z" title="发表于 2026-08-17 20:54:09">2026-08-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" title="分布式锁">分布式锁</a><time datetime="2026-08-16T01:43:26.000Z" title="发表于 2026-08-16 09:43:26">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/15/%E6%82%B2%E8%A7%82%E9%94%81/" title="悲观锁">悲观锁</a><time datetime="2026-08-15T13:39:57.000Z" title="发表于 2026-08-15 21:39:57">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Planck</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.5"></script></div></div></body></html>

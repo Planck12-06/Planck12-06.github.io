@@ -1,0 +1,341 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spring Task 定时任务 | Planck's Blog</title><meta name="author" content="Planck"><meta name="copyright" content="Planck"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#fafbfc"><meta name="description" content="Spring Task 定时任务Spring Task 是 Spring 框架提供的任务调度工具，可以按照约定的时间自动执行某个代码逻辑。 特点   特点 说明    轻量级 无需引入额外依赖，Spring Boot 已内置   简单易用 通过注解即可配置定时任务   Cron 表达式 支持灵活的时间调度规则   快速开始第 1 步：开启定时任务功能在启动类上添加 @EnableSchedulin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Task 定时任务">
+<meta property="og:url" content="https://planck12-06.github.io/2026/08/09/Spring-Task/index.html">
+<meta property="og:site_name" content="Planck&#39;s Blog">
+<meta property="og:description" content="Spring Task 定时任务Spring Task 是 Spring 框架提供的任务调度工具，可以按照约定的时间自动执行某个代码逻辑。 特点   特点 说明    轻量级 无需引入额外依赖，Spring Boot 已内置   简单易用 通过注解即可配置定时任务   Cron 表达式 支持灵活的时间调度规则   快速开始第 1 步：开启定时任务功能在启动类上添加 @EnableSchedulin">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/Planck12-06.png">
+<meta property="article:published_time" content="2026-08-09T14:00:19.000Z">
+<meta property="article:modified_time" content="2026-08-11T14:28:44.362Z">
+<meta property="article:author" content="Planck">
+<meta property="article:tag" content="Spring Task">
+<meta property="article:tag" content="定时任务">
+<meta property="article:tag" content="WebSocket">
+<meta property="article:tag" content="Apache POI">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/Planck12-06.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Spring Task 定时任务",
+  "url": "https://planck12-06.github.io/2026/08/09/Spring-Task/",
+  "image": "https://github.com/Planck12-06.png",
+  "datePublished": "2026-08-09T14:00:19.000Z",
+  "dateModified": "2026-08-11T14:28:44.362Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Planck",
+      "url": "https://planck12-06.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://planck12-06.github.io/2026/08/09/Spring-Task/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1a1d21')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fafbfc')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&amp;family=Playfair+Display:wght@400;700&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":3,"unescape":true,"pagination":{"enable":true,"hitsPerPage":10},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring Task 定时任务',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div class="bg-animation" id="web_bg" style="background-image: url(/img/atri-sunflower.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/Planck12-06.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fa-fw fab fa-github"></i><span> GitHub</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Planck's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Spring Task 定时任务</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fa-fw fab fa-github"></i><span> GitHub</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Spring Task 定时任务</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-09T14:00:19.000Z" title="发表于 2026-08-09 22:00:19">2026-08-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-11T14:28:44.362Z" title="更新于 2026-08-11 22:28:44">2026-08-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Web%E5%90%8E%E7%AB%AF/">Web后端</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读大概需要时长:</span><span>5分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="Spring-Task-定时任务"><a href="#Spring-Task-定时任务" class="headerlink" title="Spring Task 定时任务"></a>Spring Task 定时任务</h1><p>Spring Task 是 Spring 框架提供的任务调度工具，可以按照约定的时间自动执行某个代码逻辑。</p>
+<h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><table>
+<thead>
+<tr>
+<th align="left">特点</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">轻量级</td>
+<td align="left">无需引入额外依赖，Spring Boot 已内置</td>
+</tr>
+<tr>
+<td align="left">简单易用</td>
+<td align="left">通过注解即可配置定时任务</td>
+</tr>
+<tr>
+<td align="left">Cron 表达式</td>
+<td align="left">支持灵活的时间调度规则</td>
+</tr>
+</tbody></table>
+<h2 id="快速开始"><a href="#快速开始" class="headerlink" title="快速开始"></a>快速开始</h2><h3 id="第-1-步：开启定时任务功能"><a href="#第-1-步：开启定时任务功能" class="headerlink" title="第 1 步：开启定时任务功能"></a>第 1 步：开启定时任务功能</h3><p>在启动类上添加 <code>@EnableScheduling</code> 注解：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableScheduling</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Application</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(Application.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="第-2-步：编写定时任务方法"><a href="#第-2-步：编写定时任务方法" class="headerlink" title="第 2 步：编写定时任务方法"></a>第 2 步：编写定时任务方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyTask</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 每 5 秒执行一次</span></span><br><span class="line">    <span class="meta">@Scheduled(cron = &quot;0/5 * * * * ?&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">task1</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;定时任务执行了...&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="Cron-表达式"><a href="#Cron-表达式" class="headerlink" title="Cron 表达式"></a>Cron 表达式</h1><p>Cron 表达式是一个字符串，用于描述一个时间周期，用于定时任务的触发时间配置。</p>
+<h2 id="组成格式"><a href="#组成格式" class="headerlink" title="组成格式"></a>组成格式</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">秒 分 时 日 月 周 [年]</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>取值范围</th>
+<th>允许的特殊字符</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>秒（Seconds）</td><td>0 ~ 59</td><td>, - * /</td></tr>
+<tr><td>分（Minutes）</td><td>0 ~ 59</td><td>, - * /</td></tr>
+<tr><td>时（Hours）</td><td>0 ~ 23</td><td>, - * /</td></tr>
+<tr><td>日（Day of Month）</td><td>1 ~ 31</td><td>, - * ? / L W C</td></tr>
+<tr><td>月（Month）</td><td>1 ~ 12 或 JAN ~ DEC</td><td>, - * /</td></tr>
+<tr><td>周（Day of Week）</td><td>1 ~ 7 或 SUN ~ SAT</td><td>, - * ? / L C #</td></tr>
+<tr><td>年（Year，可选）</td><td>1970 ~ 2099</td><td>, - * /</td></tr>
+</tbody>
+</table>
+
+<h2 id="特殊字符说明"><a href="#特殊字符说明" class="headerlink" title="特殊字符说明"></a>特殊字符说明</h2><table>
+<thead>
+<tr>
+<th>字符</th>
+<th>含义</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><code>*</code></td><td>所有值（每...）</td><td><code>*</code> 在分字段表示每分钟</td></tr>
+<tr><td><code>?</code></td><td>不指定值（仅用于日/周字段，必须有一个为 <code>?</code>）</td><td>-</td></tr>
+<tr><td><code>-</code></td><td>范围</td><td><code>10-15</code> 表示 10 到 15</td></tr>
+<tr><td><code>,</code></td><td>列举多个值</td><td><code>1,3,5</code> 表示第 1、3、5 个</td></tr>
+<tr><td><code>/</code></td><td>递增步长</td><td><code>0/5</code> 从 0 开始每隔 5 执行一次</td></tr>
+<tr><td><code>L</code></td><td>Last（最后一天/最后一周的某天）</td><td><code>L</code> 月最后一天</td></tr>
+<tr><td><code>W</code></td><td>Workday（最近的工作日）</td><td><code>15W</code> 最近工作日到 15 号</td></tr>
+<tr><td><code>#</code></td><td>第几周的星期几</td><td><code>6#3</code> 第 3 周的周五</td></tr>
+</tbody>
+</table>
+
+<h2 id="常用表达式示例"><a href="#常用表达式示例" class="headerlink" title="常用表达式示例"></a>常用表达式示例</h2><table>
+<thead>
+<tr>
+<th>Cron 表达式</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><code>0 0 9 * * ?</code></td><td>每天上午 9 点整</td></tr>
+<tr><td><code>0 0 9 * * MON-FRI</code></td><td>周一至周五上午 9 点整</td></tr>
+<tr><td><code>0 0 0 1 * ?</code></td><td>每月 1 号零点</td></tr>
+<tr><td><code>0/5 * * * * ?</code></td><td>每 5 秒执行一次</td></tr>
+<tr><td><code>0 */10 * * * ?</code></td><td>每 10 分钟执行一次</td></tr>
+<tr><td><code>0 30 8,18 * * ?</code></td><td>每天 8 点半和 18 点半</td></tr>
+<tr><td><code>0 0 9 12 10 ?</code></td><td>每年 10 月 12 日上午 9 点整</td></tr>
+<tr><td><code>0 0 9 L * ?</code></td><td>每月最后一天上午 9 点整</td></tr>
+</tbody>
+</table>
+
+<hr>
+<h1 id="WebSocket-协议"><a href="#WebSocket-协议" class="headerlink" title="WebSocket 协议"></a>WebSocket 协议</h1><p>WebSocket 是基于 TCP 的一种新的网络协议，实现了浏览器与服务器全双工通信——浏览器和服务器只需要完成一次握手，两者之间就可以创建持久性的连接，并进行双向数据传输。</p>
+<h2 id="WebSocket-与-HTTP-协议对比"><a href="#WebSocket-与-HTTP-协议对比" class="headerlink" title="WebSocket 与 HTTP 协议对比"></a>WebSocket 与 HTTP 协议对比</h2><table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>HTTP 协议</th>
+<th>WebSocket 协议</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>连接方式</td><td>短连接</td><td>长连接</td></tr>
+<tr><td>通信模式</td><td>单向（请求-响应模式）</td><td>双向通信（基于帧的协议）</td></tr>
+<tr><td>底层协议</td><td>TCP</td><td>TCP</td></tr>
+<tr><td>适用场景</td><td>常规 Web 请求</td><td>实时消息推送、即时通讯</td></tr>
+</tbody>
+</table>
+
+<h2 id="WebSocket-使用示例"><a href="#WebSocket-使用示例" class="headerlink" title="WebSocket 使用示例"></a>WebSocket 使用示例</h2><h3 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ServerEndpoint(&quot;/ws/&#123;sid&#125;&quot;)</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WebSocketServer</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 存放会话对象</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Map&lt;String, Session&gt; sessionMap = <span class="keyword">new</span> <span class="title class_">ConcurrentHashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 连接建立成功调用的方法</span></span><br><span class="line">    <span class="meta">@OnOpen</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onOpen</span><span class="params">(Session session, <span class="meta">@PathParam(&quot;sid&quot;)</span> String sid)</span> &#123;</span><br><span class="line">        sessionMap.put(sid, session);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 收到客户端消息后调用的方法</span></span><br><span class="line">    <span class="meta">@OnMessage</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onMessage</span><span class="params">(String message, <span class="meta">@PathParam(&quot;sid&quot;)</span> String sid)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;收到来自 &quot;</span> + sid + <span class="string">&quot; 的消息：&quot;</span> + message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 连接关闭调用的方法</span></span><br><span class="line">    <span class="meta">@OnClose</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onClose</span><span class="params">(<span class="meta">@PathParam(&quot;sid&quot;)</span> String sid)</span> &#123;</span><br><span class="line">        sessionMap.remove(sid);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> socket = <span class="keyword">new</span> <span class="title class_">WebSocket</span>(<span class="string">&quot;ws://localhost:8080/ws/&quot;</span> + sid);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 连接建立事件</span></span><br><span class="line">socket.<span class="property">onopen</span> = <span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;连接建立&quot;</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 接收消息事件</span></span><br><span class="line">socket.<span class="property">onmessage</span> = <span class="keyword">function</span>(<span class="params">event</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;收到消息：&quot;</span> + event.<span class="property">data</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发送消息</span></span><br><span class="line">socket.<span class="title function_">send</span>(<span class="string">&quot;Hello Server&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 关闭连接</span></span><br><span class="line">socket.<span class="title function_">close</span>();</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="Apache-POI"><a href="#Apache-POI" class="headerlink" title="Apache POI"></a>Apache POI</h1><p>Apache POI 是一个开源 Java 库，用于在 Java 程序中对 Microsoft Office 各种文件进行读写操作。</p>
+<h2 id="核心组件"><a href="#核心组件" class="headerlink" title="核心组件"></a>核心组件</h2><table>
+<thead>
+<tr>
+<th align="left">组件</th>
+<th align="left">说明</th>
+<th align="left">适用格式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">HSSF</td>
+<td align="left">操作 Excel 97-2003 格式</td>
+<td align="left"><code>.xls</code></td>
+</tr>
+<tr>
+<td align="left">XSSF</td>
+<td align="left">操作 Excel 2007+ 格式</td>
+<td align="left"><code>.xlsx</code></td>
+</tr>
+<tr>
+<td align="left">HWPF</td>
+<td align="left">操作 Word 文档</td>
+<td align="left"><code>.doc</code></td>
+</tr>
+<tr>
+<td align="left">XWPF</td>
+<td align="left">操作 Word 2007+ 文档</td>
+<td align="left"><code>.docx</code></td>
+</tr>
+</tbody></table>
+<h2 id="Maven-依赖"><a href="#Maven-依赖" class="headerlink" title="Maven 依赖"></a>Maven 依赖</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.poi<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>poi-ooxml<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.2.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="读取-Excel-示例"><a href="#读取-Excel-示例" class="headerlink" title="读取 Excel 示例"></a>读取 Excel 示例</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> List&lt;User&gt; <span class="title function_">importExcel</span><span class="params">(MultipartFile file)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="type">InputStream</span> <span class="variable">is</span> <span class="operator">=</span> file.getInputStream();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 根据输入流创建工作簿对象</span></span><br><span class="line">    <span class="type">Workbook</span> <span class="variable">workbook</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">XSSFWorkbook</span>(is);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取第一个 Sheet</span></span><br><span class="line">    <span class="type">Sheet</span> <span class="variable">sheet</span> <span class="operator">=</span> workbook.getSheetAt(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    List&lt;User&gt; userList = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 遍历每一行数据</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= sheet.getLastRowNum(); i++) &#123; <span class="comment">// 跳过表头</span></span><br><span class="line">        <span class="type">Row</span> <span class="variable">row</span> <span class="operator">=</span> sheet.getRow(i);</span><br><span class="line"></span><br><span class="line">        <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">User</span>();</span><br><span class="line">        user.setName(row.getCell(<span class="number">0</span>).getStringCellValue());</span><br><span class="line">        user.setAge((<span class="type">int</span>) row.getCell(<span class="number">1</span>).getNumericCellValue());</span><br><span class="line">        user.setPhone(row.getCell(<span class="number">2</span>).getStringCellValue());</span><br><span class="line"></span><br><span class="line">        userList.add(user);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    workbook.close();</span><br><span class="line">    <span class="keyword">return</span> userList;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="写入-Excel-示例"><a href="#写入-Excel-示例" class="headerlink" title="写入 Excel 示例"></a>写入 Excel 示例</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">exportExcel</span><span class="params">(HttpServletResponse response, List&lt;User&gt; list)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="comment">// 创建工作簿</span></span><br><span class="line">    <span class="type">Workbook</span> <span class="variable">workbook</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">XSSFWorkbook</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 创建 Sheet</span></span><br><span class="line">    <span class="type">Sheet</span> <span class="variable">sheet</span> <span class="operator">=</span> workbook.createSheet(<span class="string">&quot;用户列表&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 创建表头行</span></span><br><span class="line">    <span class="type">Row</span> <span class="variable">headerRow</span> <span class="operator">=</span> sheet.createRow(<span class="number">0</span>);</span><br><span class="line">    headerRow.createCell(<span class="number">0</span>).setCellValue(<span class="string">&quot;姓名&quot;</span>);</span><br><span class="line">    headerRow.createCell(<span class="number">1</span>).setCellValue(<span class="string">&quot;年龄&quot;</span>);</span><br><span class="line">    headerRow.createCell(<span class="number">2</span>).setCellValue(<span class="string">&quot;电话&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 填充数据</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; list.size(); i++) &#123;</span><br><span class="line">        <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> list.get(i);</span><br><span class="line">        <span class="type">Row</span> <span class="variable">dataRow</span> <span class="operator">=</span> sheet.createRow(i + <span class="number">1</span>);</span><br><span class="line">        dataRow.createCell(<span class="number">0</span>).setCellValue(user.getName());</span><br><span class="line">        dataRow.createCell(<span class="number">1</span>).setCellValue(user.getAge());</span><br><span class="line">        dataRow.createCell(<span class="number">2</span>).setCellValue(user.getPhone());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置响应头</span></span><br><span class="line">    response.setContentType(<span class="string">&quot;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet&quot;</span>);</span><br><span class="line">    response.setHeader(<span class="string">&quot;Content-Disposition&quot;</span>, <span class="string">&quot;attachment;filename=user.xlsx&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 输出流</span></span><br><span class="line">    workbook.write(response.getOutputStream());</span><br><span class="line">    workbook.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://planck12-06.github.io">Planck</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://planck12-06.github.io/2026/08/09/Spring-Task/">https://planck12-06.github.io/2026/08/09/Spring-Task/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://planck12-06.github.io" target="_blank">Planck's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Spring-Task/">Spring Task</a><a class="post-meta__tags" href="/tags/%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/">定时任务</a><a class="post-meta__tags" href="/tags/WebSocket/">WebSocket</a><a class="post-meta__tags" href="/tags/Apache-POI/">Apache POI</a></div><div class="post-share"><div class="social-share" data-image="https://github.com/Planck12-06.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/15/%E4%B9%90%E8%A7%82%E9%94%81/" title="乐观锁"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">乐观锁</div></div><div class="info-2"><div class="info-item-1">乐观锁核心思想乐观锁对并发冲突持乐观态度：默认认为多数情况下不会发生数据冲突，因此操作前不加锁，直接执行读写操作；只有在最终提交更新时，才校验数据是否被其他操作修改过。如果检测到冲突，则返回失败，由业务层决定重试或放弃。  注意：乐观锁本质不是 “锁”，而是一种无锁的并发控制方案。  常见实现版本号机制（数据库最常用）在数据表中增加一个 version 字段，记录数据的版本号。每次更新数据时，必须校验当前版本号与读取时的版本号是否一致，一致才允许更新，并将版本号 + 1。 SQL 示例1234-- 读取数据时拿到 version = 1UPDATE goods SET stock = stock - 1, version = version + 1 WHERE id = 1001 AND version = 1;  通过判断受影响行数是否为 0，即可知道是否更新成功。如果为 0，说明在读取数据到提交更新期间，其他事务已经修改过该数据，当前更新发生冲突。 Java 实现示例1234567891011121314151617@Servicepublic class StockServ...</div></div></div></a><a class="pagination-related" href="/2026/08/07/%E7%BC%93%E5%AD%98%E6%8A%80%E6%9C%AF/" title="缓存技术"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">缓存技术</div></div><div class="info-2"><div class="info-item-1">缓存技术由于网络带宽和服务器硬件成本的限制，在高并发场景下服务器的性能会受到影响。为了解决这个问题，就需要使用缓存技术。 缓存需要将热点数据提前加载到缓存中，当下一个请求过来时，可以直接从缓存中获取，而不需要从数据库中查询。缓存技术可以提高服务器的性能，减少数据库的压力。 缓存架构123请求 → [缓存层] → 命中 → 直接返回              ↓ 未命中         [数据库] → 查询数据 → 写入缓存 → 返回数据   RedisTemplate 缓存实现通过 RedisTemplate 的方式手动操作 Redis 实现缓存功能。 核心依赖1234&lt;dependency&gt;    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;    &lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;&lt;/dependency&gt;  配置项   配置项 说明    spring.data.redis.host R...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/Planck12-06.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Planck</div><div class="author-info-description">记录全栈+AI学习过程的博客</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">21</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到Planck的技术Blog🚀🚀</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Spring-Task-%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1"><span class="toc-number">1.</span> <span class="toc-text">Spring Task 定时任务</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%B9%E7%82%B9"><span class="toc-number">1.1.</span> <span class="toc-text">特点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B"><span class="toc-number">1.2.</span> <span class="toc-text">快速开始</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-1-%E6%AD%A5%EF%BC%9A%E5%BC%80%E5%90%AF%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1%E5%8A%9F%E8%83%BD"><span class="toc-number">1.2.1.</span> <span class="toc-text">第 1 步：开启定时任务功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-2-%E6%AD%A5%EF%BC%9A%E7%BC%96%E5%86%99%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.2.</span> <span class="toc-text">第 2 步：编写定时任务方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Cron-%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">Cron 表达式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%84%E6%88%90%E6%A0%BC%E5%BC%8F"><span class="toc-number">2.1.</span> <span class="toc-text">组成格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E5%AD%97%E7%AC%A6%E8%AF%B4%E6%98%8E"><span class="toc-number">2.2.</span> <span class="toc-text">特殊字符说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E8%A1%A8%E8%BE%BE%E5%BC%8F%E7%A4%BA%E4%BE%8B"><span class="toc-number">2.3.</span> <span class="toc-text">常用表达式示例</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#WebSocket-%E5%8D%8F%E8%AE%AE"><span class="toc-number">3.</span> <span class="toc-text">WebSocket 协议</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#WebSocket-%E4%B8%8E-HTTP-%E5%8D%8F%E8%AE%AE%E5%AF%B9%E6%AF%94"><span class="toc-number">3.1.</span> <span class="toc-text">WebSocket 与 HTTP 协议对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WebSocket-%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="toc-number">3.2.</span> <span class="toc-text">WebSocket 使用示例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="toc-number">3.2.1.</span> <span class="toc-text">服务端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">3.2.2.</span> <span class="toc-text">客户端</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Apache-POI"><span class="toc-number">4.</span> <span class="toc-text">Apache POI</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6"><span class="toc-number">4.1.</span> <span class="toc-text">核心组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Maven-%E4%BE%9D%E8%B5%96"><span class="toc-number">4.2.</span> <span class="toc-text">Maven 依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96-Excel-%E7%A4%BA%E4%BE%8B"><span class="toc-number">4.3.</span> <span class="toc-text">读取 Excel 示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%85%A5-Excel-%E7%A4%BA%E4%BE%8B"><span class="toc-number">4.4.</span> <span class="toc-text">写入 Excel 示例</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/19/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" title="分布式缓存">分布式缓存</a><time datetime="2026-08-19T08:51:10.000Z" title="发表于 2026-08-19 16:51:10">2026-08-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/18/Feed%E6%B5%81/" title="Feed流">Feed流</a><time datetime="2026-08-18T08:59:36.000Z" title="发表于 2026-08-18 16:59:36">2026-08-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/17/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" title="消息队列">消息队列</a><time datetime="2026-08-17T12:54:09.000Z" title="发表于 2026-08-17 20:54:09">2026-08-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" title="分布式锁">分布式锁</a><time datetime="2026-08-16T01:43:26.000Z" title="发表于 2026-08-16 09:43:26">2026-08-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/15/%E6%82%B2%E8%A7%82%E9%94%81/" title="悲观锁">悲观锁</a><time datetime="2026-08-15T13:39:57.000Z" title="发表于 2026-08-15 21:39:57">2026-08-15</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Planck</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.5"></script></div></div></body></html>
