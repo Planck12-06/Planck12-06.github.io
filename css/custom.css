@@ -1,73 +1,85 @@
 /* ========================================
-   Planck's Blog - 卡片式首页 + 极简清新主题
-   风格：通透干净、大量留白、低饱和高级感
-   适配：Hexo Butterfly 主题 (index_layout: 4)
+   Planck's Blog - 自定义样式
+   适配：Hexo Butterfly 主题
 ======================================== */
 
-
-/* ========================================
-   1. 全局布局 - 加宽留白、居中透气
-======================================== */
-
-/* 页面整体 + 覆盖主题 CSS 变量 */
+/* 1. 全局布局 */
 :root {
-  --global-font-size: 18px;
+  --card-bg: linear-gradient(135deg, #fefefe 0%, #f5f3f0 100%);
 }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
     'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 18px;
-  line-height: 1.9;
-  letter-spacing: 0.4px;
   background-color: #faf8f5;
   color: #1a1a1a;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* 主内容区加宽 */
+/* 主内容区 - 不加额外padding，使用主题默认布局 */
 #page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 60px;
+}
+
+/* 2. 首页两列布局 */
+#recent-posts {
+  padding: 50px 40px;
+  min-height: 90px;
 }
 
 @media screen and (max-width: 768px) {
-  #page {
-    padding: 0 20px;
+  #recent-posts { padding: 36px 14px; }
+}
+
+/* 主内容区高度自适应：桌面端两列布局下，主内容区按自身内容高度展示，
+   不再被侧边栏拉伸撑出底部大片空白（仅桌面端生效，移动端为单列不受影响） */
+@media screen and (min-width: 901px) {
+  .layout > #recent-posts {
+    align-self: flex-start;
   }
 }
 
-
-/* ========================================
-   2. Grid 网格容器 - 标准两栏等分
-======================================== */
-
-/* 文章列表外层容器 */
 #recent-posts .recent-post-items {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 24px;
-  padding: 0;
 }
 
-/* 单独文章不做特殊处理，全部等分 */
+@media screen and (max-width: 768px) {
+  #recent-posts .recent-post-items {
+    grid-template-columns: 1fr;
+  }
+}
+
 #recent-posts .recent-post-item {
   width: 100%;
   margin: 0;
 }
 
+/* 3. 卡片样式 */
+.card-widget,
+#post {
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fefefe 0%, #f5f3f0 100%) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
 
-/* ========================================
-   3. 卡片整体 - 统一尺寸、圆角、柔光
-======================================== */
+.card-widget {
+  padding: 24px;
+}
 
+.card-widget:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+/* 首页文章卡片 */
 #recent-posts .recent-post-item {
   border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04),
-              0 4px 16px rgba(0, 0, 0, 0.03);
+  background: linear-gradient(135deg, #fefefe 0%, #f5f3f0 100%);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.03);
   border: 1px solid rgba(0, 0, 0, 0.05);
   overflow: hidden;
   display: flex;
@@ -76,7 +88,11 @@ body {
   padding: 0;
 }
 
-/* 取消主题原有 info 的 flex 方向，改为纵向堆叠 */
+#recent-posts .recent-post-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
 #recent-posts .recent-post-info {
   display: flex;
   flex-direction: column;
@@ -84,27 +100,17 @@ body {
   height: 100%;
 }
 
-/* 重置主题 padding */
-#recent-posts .recent-post-item .recent-post-info {
-  padding: 0;
-}
-
-
-/* ========================================
-   4. 卡片封面大图 - 视觉差异来源
-======================================== */
-
-/* 封面图容器占卡片上半部分 */
+/* 封面图 */
 #recent-posts .post_cover {
   width: 100%;
-  height: 200px;
+  aspect-ratio: 16 / 9;
+  height: auto;
   overflow: hidden;
   margin: 0;
   border-radius: 0;
   flex-shrink: 0;
 }
 
-/* 封面图本体：圆角继承卡片顶部、裁切铺满 */
 #recent-posts .post_cover img.post_bg,
 #recent-posts .post_cover img {
   width: 100%;
@@ -116,16 +122,10 @@ body {
   transition: transform 0.35s ease;
 }
 
-/* hover 时封面图微放大，增加灵动感 */
 #recent-posts .recent-post-item:hover .post_cover img.post_bg,
 #recent-posts .recent-post-item:hover .post_cover img {
   transform: scale(1.03);
 }
-
-
-/* ========================================
-   5. 卡片文字区 - 标题、摘要、元信息
-======================================== */
 
 /* 文字区域 */
 #recent-posts .recent-post-info {
@@ -149,7 +149,6 @@ body {
   overflow: hidden;
 }
 
-/* 标题链接 */
 #recent-posts .article-title a {
   color: #1f2d35;
   transition: color 0.2s ease;
@@ -174,7 +173,7 @@ body {
   flex: 1;
 }
 
-/* 元信息区 - 固定在底部 */
+/* 元信息区 */
 #recent-posts .article-meta-wrap {
   font-size: 0.82em;
   color: #a0aab0;
@@ -187,7 +186,6 @@ body {
   margin-top: auto;
 }
 
-/* 元信息项 */
 #recent-posts .article-meta-wrap .article-meta-item {
   margin-right: 0;
 }
@@ -197,591 +195,207 @@ body {
   color: #c0c8cc;
 }
 
-/* 日期 */
-#recent-posts .post-meta-date {
-  color: #a0aab0;
+/* 深色模式卡片 */
+[data-theme="dark"] .card-widget,
+[data-theme="dark"] #post {
+  background: linear-gradient(135deg, #2a2a30 0%, #222228 100%) !important;
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
-#recent-posts .post-meta-date i {
-  color: #c0c8cc;
-  margin-right: 5px;
+[data-theme="dark"] #recent-posts .recent-post-item {
+  background: linear-gradient(135deg, #2a2a30 0%, #222228 100%);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
-/* 分类标签 */
-#recent-posts .article-meta-wrap .article-meta__categories {
-  color: #2677a3;
-  transition: color 0.2s ease;
-  text-decoration: none;
-}
-
-#recent-posts .article-meta-wrap .article-meta__categories:hover {
-  color: #3a8cb5;
-}
-
-/* 元信息分隔符 */
-#recent-posts .article-meta-wrap .article-meta-separator {
-  color: #dde2e5;
-  margin: 0 2px;
-}
-
-
-/* ========================================
-   6. 无封面图占位 - 极简底色，不破坏布局
-======================================== */
-
-/* 无封面时显示渐变占位区域 */
-#recent-posts .recent-post-item .recent-post-info.no-cover::before {
-  content: '';
-  display: block;
-  width: 100%;
-  height: 160px;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 40%, #a5c8e0 100%);
-  border-radius: 0;
-  flex-shrink: 0;
-}
-
-/* 微妙的装饰文字，提升无封面卡的辨识度 */
-#recent-posts .recent-post-item .recent-post-info.no-cover {
-  position: relative;
-}
-
-/* 无封面时标题区域增加上间距补偿 */
-#recent-posts .recent-post-item .recent-post-info.no-cover .article-title {
-  margin-top: 0;
-}
-
-
-/* ========================================
-   7. Hover 整体交互 - 克制上浮 + 阴影加深
-======================================== */
-
-#recent-posts .recent-post-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06),
-              0 12px 32px rgba(0, 0, 0, 0.05);
-}
-
-
-/* ========================================
-   8. 响应式 - 平板 1~2 列、移动端强制单栏
-======================================== */
-
-/* 平板端：窄屏时变为单列 */
-@media screen and (max-width: 1024px) {
-  #recent-posts .recent-post-items {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  #recent-posts .post_cover {
-    height: 180px;
-  }
-}
-
-/* 移动端 */
-@media screen and (max-width: 768px) {
-  #recent-posts .recent-post-items {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  #recent-posts .post_cover {
-    height: 160px;
-  }
-
-  #recent-posts .recent-post-info {
-    padding: 20px 22px 24px;
-  }
-
-  #recent-posts .article-title {
-    font-size: 1.1em;
-  }
-
-  #recent-posts .content {
-    -webkit-line-clamp: 2;
-  }
-
-  body {
-    font-size: 16px;
-  }
-
-  #article-container {
-    font-size: 16px;
-    line-height: 1.85;
-  }
-
-  #article-container h1 {
-    font-size: 1.7em;
-    margin-top: 2em;
-  }
-
-  #article-container h2 {
-    font-size: 1.4em;
-    margin-top: 1.8em;
-  }
-
-  #article-container h3 {
-    font-size: 1.2em;
-  }
-
-  #article-container h4 {
-    font-size: 1.08em;
-  }
-
-  #article-container p {
-    margin-top: 1.2em;
-    margin-bottom: 1.2em;
-  }
-
-  #article-container pre {
-    font-size: 0.88em;
-    padding: 16px 18px;
-  }
-
-  #post {
-    padding: 24px 20px;
-  }
-
-  .recent-post-item {
-    padding: 20px;
-  }
-}
-
-
-/* ========================================
-   9. 深色模式 - 柔和深灰，拒绝纯黑
-======================================== */
-
-/* 深色模式页面底色 */
-[data-theme="dark"] body {
-  background-color: #1a1d21;
+[data-theme="dark"] #recent-posts .article-title a {
   color: #e5e7eb;
 }
 
-/* 深色模式卡片 */
-[data-theme="dark"] #recent-posts .recent-post-item {
-  background: #252830;
-  border-color: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2),
-              0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-/* 深色模式 hover */
-[data-theme="dark"] #recent-posts .recent-post-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25),
-              0 12px 32px rgba(0, 0, 0, 0.2);
-}
-
-/* 深色模式标题 */
-[data-theme="dark"] #recent-posts .article-title a {
-  color: #e0e4e8;
-}
-
 [data-theme="dark"] #recent-posts .article-title a:hover {
-  color: #3a8cb5;
+  color: #60a5fa;
 }
 
-/* 深色模式摘要 */
 [data-theme="dark"] #recent-posts .content {
-  color: #8a949c;
+  color: #8b949e;
 }
 
-/* 深色模式元信息 */
 [data-theme="dark"] #recent-posts .article-meta-wrap {
+  color: #6b7280;
   border-top-color: #363a44;
-  color: #6b7280;
 }
 
-[data-theme="dark"] #recent-posts .post-meta-date {
-  color: #6b7280;
-}
-
-[data-theme="dark"] #recent-posts .post-meta-date i {
+[data-theme="dark"] #recent-posts .article-meta-wrap .article-meta-item i {
   color: #4a5560;
 }
 
-[data-theme="dark"] #recent-posts .article-meta-wrap .article-meta-separator {
-  color: #363a44;
-}
-
-/* 深色模式无封面占位 */
-[data-theme="dark"] #recent-posts .recent-post-item .recent-post-info.no-cover::before {
-  background: linear-gradient(135deg, #1e3a5f 0%, #1a2d45 50%, #162235 100%);
-}
-
-/* 深色模式分类链接 */
-[data-theme="dark"] #recent-posts .article-meta-wrap .article-meta__categories {
-  color: #3f8ab0;
-}
-
-[data-theme="dark"] #recent-posts .article-meta-wrap .article-meta__categories:hover {
-  color: #80c0e9;
-}
-
-
-/* ========================================
-   10. 其他卡片样式 - 侧边栏、文章页
-======================================== */
-
-/* 所有通用卡片 */
-.card-widget,
-#post {
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
-              0 4px 12px rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
-}
-
-.card-widget {
-  padding: 24px;
-}
-
-.card-widget:hover {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06),
-              0 8px 24px rgba(0, 0, 0, 0.04);
-  transform: translateY(-2px);
-}
-
-
-/* ========================================
-   11.1 标题锚点清除 - 彻底隐藏 headerlink
-======================================== */
-
-/* 完全移除标题前面的锚点链接图标（beautify ::before 伪元素） */
-#article-container h1::before,
-#article-container h2::before,
-#article-container h3::before,
-#article-container h4::before,
-#article-container h5::before,
-#article-container h6::before {
-  content: none !important;
-  display: none !important;
-}
-
-/* 移除 beautify 给标题加的左侧 padding */
-#article-container h1,
-#article-container h2,
-#article-container h3,
-#article-container h4,
-#article-container h5,
-#article-container h6 {
-  padding-left: 0 !important;
-}
-
-/* 隐藏 headerlink 锚点元素本身 */
-#article-container .headerlink {
-  display: none !important;
-}
-
-
-/* ========================================
-   11.2 文章正文字号颜色 - 放大字号、加深颜色
-======================================== */
-
-/* 正文 */
-#article-container {
-  font-size: 18px;
-  line-height: 2;
-  color: #1a1a1a;
-  font-weight: 400;
-}
-
-/* 段落 */
-#article-container p {
-  margin-top: 1.5em;
-  margin-bottom: 1.5em;
-  line-height: 2;
-  color: #1a1a1a;
-}
-
-
-/* ========================================
-   11.3 标题层级样式 - 字号上调、字重克制
-======================================== */
-
-/* h1 */
-#article-container h1 {
-  font-size: 2em;
-  font-weight: 600;
-  color: #111827;
-  margin-top: 2.8em;
-  margin-bottom: 1em;
-  line-height: 1.4;
-  letter-spacing: -0.01em;
-}
-
-/* h2 */
-#article-container h2 {
-  font-size: 1.65em;
-  font-weight: 600;
-  color: #111827;
-  margin-top: 2.5em;
-  margin-bottom: 0.8em;
-  padding-bottom: 0.5em;
-  border-bottom: 1px solid #e8eef1;
-  line-height: 1.4;
-}
-
-/* h3 */
-#article-container h3 {
-  font-size: 1.35em;
-  font-weight: 580;
-  color: #1f2937;
-  margin-top: 2em;
-  margin-bottom: 0.7em;
-  padding-left: 14px !important;
-  border-left: 3px solid #c8d8dc;
-  line-height: 1.5;
-}
-
-/* h4 */
-#article-container h4 {
-  font-size: 1.2em;
-  font-weight: 580;
-  color: #1f2937;
-  margin-top: 1.8em;
-  margin-bottom: 0.6em;
-}
-
-/* h5 */
-#article-container h5 {
-  font-size: 1.08em;
-  font-weight: 570;
-  color: #374151;
-  margin-top: 1.6em;
-  margin-bottom: 0.5em;
-}
-
-/* h6 */
-#article-container h6 {
-  font-size: 1.02em;
-  font-weight: 570;
-  color: #374151;
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-}
-
-
-/* ========================================
-   11.4 段落间距 - 拉开层次、呼吸感
-======================================== */
-
-#article-container ul,
-#article-container ol {
-  padding-left: 1.8em;
-  margin: 1.4em 0;
-}
-
-#article-container li {
-  margin: 0.7em 0;
-  line-height: 1.9;
-}
-
-#article-container blockquote {
+/* 3. 代码块 - 关键：支持水平滚动 */
+figure.highlight {
+  border-radius: 10px;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
   margin: 2em 0;
-  padding: 18px 22px;
-  border-left: 3px solid #c8d8dc;
-  background: #f8fafb;
-  border-radius: 0 8px 8px 0;
-  color: #374151;
-  font-size: 0.95em;
-  line-height: 1.85;
+  overflow: auto;
+  max-height: 600px;
 }
 
-#article-container hr {
-  margin: 3em 0;
+/* 隐藏行号 */
+figure.highlight td.gutter {
+  display: none;
+}
+
+/* 代码块表格 - 设置为块级元素可滚动 */
+figure.highlight table {
+  display: block;
+  overflow: auto;
+}
+
+/* 代码块内容 - 关键：移除宽度限制 */
+figure.highlight .code pre,
+figure.highlight td.code pre {
+  white-space: pre !important;
+  width: auto !important;
+  min-width: min-content;
+  padding: 16px;
+  font-size: 0.85em;
+  line-height: 1.6;
+  margin: 0;
+  background: transparent;
   border: none;
-  height: 1px;
-  background: #e8eef1;
 }
 
-
-/* ========================================
-   13. 配色系统 - 米白底色 + 低饱和主色
-======================================== */
-
-#article-container a {
-  color: #2563eb;
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: color 0.2s ease, border-color 0.2s ease;
+figure.highlight code {
+  white-space: pre !important;
 }
 
-#article-container a:hover {
-  color: #3a8cb5;
-  border-bottom-color: #c8d8dc;
-}
-
-#article-container table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1.8em 0;
-  border-radius: 8px;
-  overflow: hidden;
-  font-size: 0.95em;
-}
-
-#article-container thead {
-  background: #f0f4f6;
-}
-
-#article-container th {
-  padding: 12px 16px;
-  font-weight: 600;
-  color: #3d4f58;
-  text-align: left;
-  border-bottom: 2px solid #e0e8ec;
-}
-
-#article-container td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #eef2f4;
-}
-
-#article-container tbody tr:hover {
-  background: #f8fafb;
-}
-
-::selection {
-  background: #d4e4e8;
-  color: #2c3e47;
-}
-
-
-/* ========================================
-   11.5 代码块微调 - 字号同步优化
-======================================== */
-
+/* 行内代码 */
 #article-container code {
-  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
   font-size: 0.9em;
   background: #f0f4f6;
   color: #4a6a78;
   padding: 2px 7px;
   border-radius: 5px;
   border: 1px solid #e4eaed;
-  font-weight: 500;
 }
 
-#article-container pre,
-#article-container .highlight {
-  border-radius: 10px;
-  background: #f5f7f9;
-  border: 1px solid #e4eaed;
-  box-shadow: none;
-  margin: 2em 0;
-  overflow: hidden;
+/* 代码块滚动条 */
+figure.highlight::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-#article-container pre {
-  padding: 20px 24px;
-  font-size: 0.92em;
-  line-height: 1.75;
+figure.highlight::-webkit-scrollbar-track {
+  background: #f6f8fa;
+  border-radius: 4px;
 }
 
-.gutter {
-  background: #f0f3f5;
-  border-right: 1px solid #e4eaed;
+figure.highlight::-webkit-scrollbar-thumb {
+  background: #d0d7de;
+  border-radius: 4px;
 }
 
-.gutter pre {
-  color: #a0aab0;
-  font-size: 0.88em;
+[data-theme="dark"] figure.highlight::-webkit-scrollbar-track {
+  background: #161b22;
 }
 
-/* 代码高亮 */
-.highlight .keyword { color: #7a6bb0; }
-.highlight .string { color: #6a9e6a; }
-.highlight .comment { color: #a0aab0; font-style: italic; }
-.highlight .function { color: #2677a3; }
-.highlight .number { color: #c07a4a; }
-.highlight .title { color: #2677a3; }
-.highlight .params { color: #7a6bb0; }
+[data-theme="dark"] figure.highlight::-webkit-scrollbar-thumb {
+  background: #30363d;
+}
 
-/* 深色模式代码块 */
+/* 4. 代码高亮颜色 - VSCode/GitHub风格 */
+.highlight .keyword { color: #d73a49; font-weight: 500; }
+.highlight .string { color: #032f62; }
+.highlight .comment { color: #6a737d; font-style: italic; }
+.highlight .function { color: #6f42c1; }
+.highlight .number { color: #005cc5; }
+.highlight .title { color: #6f42c1; }
+.highlight .params { color: #24292e; }
+.highlight .attr { color: #005cc5; }
+.highlight .built_in { color: #e36209; }
+.highlight .literal { color: #005cc5; }
+.highlight .type { color: #d73a49; }
+.highlight .meta { color: #6a737d; }
+.highlight .tag { color: #22863a; }
+.highlight .name { color: #22863a; }
+.highlight .attribute { color: #6f42c1; }
+.highlight .selector { color: #22863a; }
+.highlight .bullet { color: #005cc5; }
+.highlight .addition { color: #22863a; background: #e6ffed; }
+.highlight .deletion { color: #b31d28; background: #ffeef0; }
+.highlight .link { color: #0366d6; text-decoration: underline; }
+
+/* 深色模式代码高亮 */
 [data-theme="dark"] #article-container pre,
 [data-theme="dark"] #article-container .highlight,
 [data-theme="dark"] #article-container code {
-  background: #252830;
-  border-color: #363a44;
-  color: #d1d5db;
+  background: #0d1117;
+  border-color: #30363d;
+  color: #c9d1d9;
 }
 
-/* 深色模式链接 */
-[data-theme="dark"] #article-container a {
-  color: #60a5fa;
+[data-theme="dark"] .highlight .keyword { color: #ff7b72; }
+[data-theme="dark"] .highlight .string { color: #a5d6ff; }
+[data-theme="dark"] .highlight .comment { color: #8b949e; }
+[data-theme="dark"] .highlight .function { color: #d2a8ff; }
+[data-theme="dark"] .highlight .number { color: #79c0ff; }
+[data-theme="dark"] .highlight .title { color: #d2a8ff; }
+[data-theme="dark"] .highlight .params { color: #c9d1d9; }
+[data-theme="dark"] .highlight .attr { color: #79c0ff; }
+[data-theme="dark"] .highlight .built_in { color: #ffa657; }
+[data-theme="dark"] .highlight .literal { color: #79c0ff; }
+[data-theme="dark"] .highlight .type { color: #ff7b72; }
+[data-theme="dark"] .highlight .meta { color: #8b949e; }
+[data-theme="dark"] .highlight .tag { color: #7ee787; }
+[data-theme="dark"] .highlight .name { color: #7ee787; }
+[data-theme="dark"] .highlight .attribute { color: #d2a8ff; }
+[data-theme="dark"] .highlight .selector { color: #7ee787; }
+[data-theme="dark"] .highlight .bullet { color: #79c0ff; }
+[data-theme="dark"] .highlight .addition { color: #aff5b4; background: #033a16; }
+[data-theme="dark"] .highlight .deletion { color: #ffdcd7; background: #67060c; }
+[data-theme="dark"] .highlight .link { color: #58a6ff; }
+
+/* 5. 标题色彩流动效果 */
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
 }
 
-[data-theme="dark"] .gutter {
-  background: #22252c;
-  border-color: #363a44;
+#site-title,
+#site-info #site-title,
+#page-site-info #site-title,
+a.nav-site-title {
+  background: linear-gradient(to right, #22d3ee, #06b6d4, #a78bfa, #818cf8, #c084fc, #22d3ee);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-flow 3s linear infinite;
+  font-weight: 700;
+  letter-spacing: 2px;
 }
 
-[data-theme="dark"] .gutter pre {
-  color: #6b7280;
+[data-theme="dark"] #site-title,
+[data-theme="dark"] #site-info #site-title,
+[data-theme="dark"] #page-site-info #site-title,
+[data-theme="dark"] a.nav-site-title {
+  background: linear-gradient(to right, #22d3ee, #67e8f9, #a78bfa, #818cf8, #c084fc, #22d3ee);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-flow 3s linear infinite;
 }
 
-
-/* ========================================
-   15. 导航栏 - 轻量化、不抢焦点
-======================================== */
-
-#nav {
-  background: rgba(250, 248, 245, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: none;
+#site-title:hover,
+#site-info #site-title:hover,
+#page-site-info #site-title:hover,
+a.nav-site-title:hover {
+  animation-play-state: paused;
 }
 
-.nav-fixed #nav {
-  background: rgba(250, 248, 245, 0.92);
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
-}
-
-#nav a {
-  color: #5a6f78;
-  font-weight: 450;
-  transition: color 0.2s ease;
-}
-
-#nav a:hover {
-  color: #3d4f58;
-}
-
-#menus {
-  display: flex;
-  align-items: center;
-}
-
-#menus .menus_items {
-  display: flex;
-  order: 1;
-}
-
-#menus #search-button {
-  order: 2;
-}
-
-#menus #toggle-menu {
-  order: 3;
-}
-
-
-/* ========================================
-   16. 侧边栏 - 简约通透
-======================================== */
-
-.card-widget {
-  background: rgba(255, 255, 255, 0.8);
+/* 6. 侧边栏 */
+#aside-content .card-widget {
   margin-bottom: 16px;
-}
-
-.card-info {
-  background: linear-gradient(135deg, #f0f4f6 0%, #e8eef1 100%) !important;
-  border: 1px solid #e0e8ec;
 }
 
 .card-info .author-info__name {
@@ -810,6 +424,26 @@ body {
   color: #2677a3;
 }
 
+/* 标签云滚动 */
+.card-tag-cloud {
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.card-tag-cloud::-webkit-scrollbar {
+  width: 4px;
+}
+
+.card-tag-cloud::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.card-tag-cloud::-webkit-scrollbar-thumb {
+  background: #d0d8dc;
+  border-radius: 2px;
+}
+
 .card-tag-cloud a {
   display: inline-block;
   padding: 4px 12px;
@@ -818,7 +452,6 @@ body {
   color: #5a6f78;
   font-size: 0.85em;
   border-radius: 6px;
-  transition: background 0.2s ease, color 0.2s ease;
   border: 1px solid #eef2f4;
 }
 
@@ -827,104 +460,258 @@ body {
   color: #3d4f58;
 }
 
-.card-category-list a {
-  color: #5a6f78;
-  transition: color 0.2s ease;
+/* 侧边栏列表组件高度自适应 + 内部滚动：
+   内容超出上限时在组件内部滚动，避免侧边栏被列表内容无限拉长，
+   造成与主内容区高度差过大、页面底部出现大片空白 */
+#aside-content .card-recent-post .aside-list {
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
-.card-category-list a:hover {
+#aside-content .card-categories .card-category-list {
+  max-height: 160px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#aside-content .card-tag-cloud,
+#aside-content .card-recent-post .aside-list,
+#aside-content .card-categories .card-category-list {
+  scrollbar-width: thin;
+  scrollbar-color: #d0d8dc transparent;
+}
+
+#aside-content .card-tag-cloud::-webkit-scrollbar,
+#aside-content .card-recent-post .aside-list::-webkit-scrollbar,
+#aside-content .card-categories .card-category-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+#aside-content .card-tag-cloud::-webkit-scrollbar-track,
+#aside-content .card-recent-post .aside-list::-webkit-scrollbar-track,
+#aside-content .card-categories .card-category-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#aside-content .card-tag-cloud::-webkit-scrollbar-thumb,
+#aside-content .card-recent-post .aside-list::-webkit-scrollbar-thumb,
+#aside-content .card-categories .card-category-list::-webkit-scrollbar-thumb {
+  background: #d0d8dc;
+  border-radius: 2px;
+}
+
+[data-theme="dark"] #aside-content .card-tag-cloud::-webkit-scrollbar-thumb,
+[data-theme="dark"] #aside-content .card-recent-post .aside-list::-webkit-scrollbar-thumb,
+[data-theme="dark"] #aside-content .card-categories .card-category-list::-webkit-scrollbar-thumb {
+  background: #4a5560;
+}
+
+/* 7. 导航栏 */
+#nav {
+  background: rgba(250, 248, 245, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.nav-fixed #nav {
+  background: rgba(250, 248, 245, 0.92);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+#nav a {
+  color: #5a6f78;
+  font-weight: 450;
+}
+
+#nav a:hover {
   color: #3d4f58;
 }
 
-.card-announcement {
-  background: #f8fafb !important;
-  border-left: 3px solid #c8d8dc !important;
-  border-radius: 0 8px 8px 0 !important;
+/* 搜索图标文字（span.site-page，非 <a>，主题默认用 #EEEEEE 浅色，
+   在浅色导航栏上几乎不可见；此处与导航菜单项保持一致。
+   注意：选择器必须写成 #nav span.site-page（带元素），与主题规则同权重，
+   靠加载顺序覆盖生效；写成 #nav .site-page 权重不足会被主题反压） */
+#nav span.site-page {
+  color: #5a6f78;
+  text-shadow: none;
 }
 
-
-/* ========================================
-   16.1 右侧目录样式修复 - 字号与颜色
-======================================== */
-
-/* 目录容器 */
-#card-toc .toc-content {
-  font-size: 1em;
-  line-height: 1.8;
-  color: #1f2937;
+#nav span.site-page:hover {
+  color: #3d4f58;
 }
 
-/* 目录链接 */
-#aside-content #card-toc .toc-content .toc-link {
-  color: #1f2937;
-  font-size: 1em;
-  padding: 4px 12px;
-  transition: color 0.2s ease, background 0.2s ease;
+/* 8. 文章详情页 */
+#post {
+  padding: 40px 48px;
+  margin-bottom: 24px;
 }
 
-#aside-content #card-toc .toc-content .toc-link:hover {
-  color: #fff;
-  background: #2677a3;
+@media screen and (max-width: 768px) {
+  #post { padding: 24px 20px; }
 }
 
-/* 目录当前激活项 */
-#aside-content #card-toc .toc-content .toc-link.active {
-  background: #2677a3;
-  color: #fff;
-  font-weight: 550;
+#post-title {
+  font-size: 2em;
+  font-weight: 700;
+  color: #1f2d35;
+  line-height: 1.35;
+  margin-bottom: 16px;
 }
 
-/* 目录编号 */
-#card-toc .toc-number {
-  color: #6b7280;
+#post-meta {
+  color: #8a9ba4;
   font-size: 0.9em;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eef2f4;
 }
 
-/* 目录文字 */
-#card-toc .toc-text {
-  color: #1f2937;
+#post-meta a {
+  color: #2677a3;
 }
 
-/* 目录子层级 */
-#card-toc .toc-child .toc-text {
-  color: #4b5563;
+#post-meta a:hover {
+  color: #3d4f58;
 }
 
-#card-toc .toc-child {
-  border-left-color: #d1d5db;
+#article-container {
+  padding: 0;
+  background: transparent;
 }
 
-/* 目录百分比 */
-#card-toc .toc-percentage {
-  color: #9ca3af;
-  font-size: 0.9em;
+/* 文章内容样式 */
+#article-container img {
+  max-width: 100%;
+  border-radius: 10px;
+  margin: 20px 0;
 }
 
-/* 深色模式目录 */
-[data-theme="dark"] #aside-content #card-toc .toc-content .toc-link {
+#article-container a {
+  color: #2677a3;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(38, 119, 163, 0.2);
+}
+
+#article-container a:hover {
+  color: #1a5c7a;
+  border-bottom-color: #1a5c7a;
+}
+
+#article-container blockquote {
+  border-left: 4px solid #d0e0e6;
+  background: #f6f8fa;
+  padding: 16px 20px;
+  margin: 24px 0;
+  border-radius: 0 8px 8px 0;
+  color: #5a6f78;
+}
+
+#article-container hr {
+  border: none;
+  height: 1px;
+  background: #e5eaed;
+  margin: 40px 0;
+}
+
+/* 9. TOC目录 */
+#card-toc .toc-content .toc-link {
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  color: #5a6f78;
+  border-left: 2px solid transparent;
+}
+
+#card-toc .toc-content .toc-link:hover {
+  color: #24292f;
+  background: #f6f8fa;
+  transform: translateX(4px);
+}
+
+#card-toc .toc-content .toc-link.active {
+  background: #e8f4fd;
+  color: #2677a3;
+  border-left-color: #2677a3;
+  font-weight: 500;
+}
+
+[data-theme="dark"] #card-toc .toc-content .toc-link:hover {
+  color: #e5e7eb;
+  background: #1f2937;
+}
+
+[data-theme="dark"] #card-toc .toc-content .toc-link.active {
+  background: #1e3a5f;
+  color: #60a5fa;
+  border-left-color: #60a5fa;
+}
+
+/* 10. 深色模式全局 */
+[data-theme="dark"] body {
+  background-color: #0d1117;
   color: #e5e7eb;
 }
 
-[data-theme="dark"] #aside-content #card-toc .toc-content .toc-link:hover {
-  color: #fff;
-  background: #2677a3;
+[data-theme="dark"] {
+  --card-bg: linear-gradient(135deg, #2a2a30 0%, #222228 100%);
 }
 
-[data-theme="dark"] #aside-content #card-toc .toc-content .toc-link.active {
-  background: #2677a3;
-  color: #fff;
+[data-theme="dark"] #nav {
+  background: rgba(26, 29, 33, 0.9);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
-[data-theme="dark"] #card-toc .toc-number {
+[data-theme="dark"] #nav a {
+  color: #a0aab0;
+}
+
+[data-theme="dark"] #nav a:hover {
+  color: #e0e4e8;
+}
+
+[data-theme="dark"] #nav span.site-page {
+  color: #a0aab0;
+}
+
+[data-theme="dark"] #nav span.site-page:hover {
+  color: #e0e4e8;
+}
+
+[data-theme="dark"] #post-meta {
   color: #6b7280;
+  border-bottom-color: #363a44;
 }
 
-[data-theme="dark"] #card-toc .toc-text {
-  color: #e5e7eb;
+[data-theme="dark"] #post-meta a {
+  color: #60a5fa;
 }
 
-[data-theme="dark"] #card-toc .toc-child .toc-text {
-  color: #9ca3af;
+[data-theme="dark"] #article-container blockquote {
+  background: #252830;
+  border-left-color: #4a5560;
+  color: #a0aab0;
+}
+
+[data-theme="dark"] #article-container hr {
+  background: #363a44;
+}
+
+[data-theme="dark"] .card-info {
+  background: linear-gradient(135deg, #2a2a30 0%, #222228 100%) !important;
+  border-color: #363a44;
+}
+
+[data-theme="dark"] .card-tag-cloud a {
+  background: #2a2d35;
+  border-color: #363a44;
+  color: #a0aab0;
+}
+
+[data-theme="dark"] .card-tag-cloud a:hover {
+  background: #363a44;
+  color: #c8cdd3;
 }
 
 [data-theme="dark"] .item-headline {
@@ -939,78 +726,14 @@ body {
   color: #5dade0;
 }
 
-
-/* ========================================
-   17. 文章详情页 - 专注阅读
-======================================== */
-
-#post {
-  padding: 40px 48px;
-  margin-bottom: 24px;
+[data-theme="dark"] #footer {
+  border-top-color: #363a44;
 }
 
-@media screen and (max-width: 768px) {
-  #post {
-    padding: 24px 20px;
-  }
-}
-
-#post-title {
-  font-size: 2em;
-  font-weight: 700;
-  color: #1f2d35;
-  line-height: 1.35;
-  margin-bottom: 16px;
-  letter-spacing: -0.02em;
-}
-
-#post-meta {
-  color: #8a9ba4;
-  font-size: 0.9em;
-  margin-bottom: 28px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eef2f4;
-}
-
-#post-meta a {
-  color: #2677a3;
-  transition: color 0.2s ease;
-}
-
-#post-meta a:hover {
-  color: #3d4f58;
-}
-
-#article-container {
-  padding: 0;
-  background: transparent;
-  box-shadow: none;
-  border: none;
-  border-radius: 0;
-}
-
-#article-container img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 10px;
-  margin: 1.5em 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.25s ease;
-}
-
-#article-container img:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-
-/* ========================================
-   18. 交互 - 极轻过渡、克制柔和
-======================================== */
-
-/* 滚动条 */
+/* 11. 滚动条 */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -1022,33 +745,20 @@ body {
   border-radius: 3px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #b8c4c8;
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #4a5560;
 }
 
-/* 按钮 */
+/* 12. 其他交互 */
 .button--animated {
   background: #2677a3 !important;
   border-radius: 8px !important;
   box-shadow: 0 1px 4px rgba(92, 124, 138, 0.2) !important;
-  transition: background 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 .button--animated:hover {
   background: #3a8cb5 !important;
   box-shadow: 0 2px 8px rgba(92, 124, 138, 0.25) !important;
-}
-
-/* 分页器 */
-.pagination {
-  margin-top: 40px;
-}
-
-.pagination .page-number,
-.pagination .extend {
-  border-radius: 8px;
-  margin: 0 3px;
-  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .pagination .page-number.current,
@@ -1057,56 +767,72 @@ body {
   color: white !important;
 }
 
-/* 回到顶部 */
-#go-up {
-  border-radius: 8px;
-  transition: background 0.2s ease;
-}
-
-/* 阅读进度条 */
 #page-header .progress-bar-inner {
   background: #2677a3 !important;
   height: 2px !important;
 }
 
-/* 面包屑 */
-.breadcrumb {
-  font-size: 0.85em;
-  color: #8a9ba4;
+/* 13. 标题锚点隐藏 */
+#article-container h1::before,
+#article-container h2::before,
+#article-container h3::before,
+#article-container h4::before,
+#article-container h5::before,
+#article-container h6::before {
+  content: none !important;
+  display: none !important;
 }
 
-.breadcrumb a {
-  color: #2677a3;
-  transition: color 0.2s ease;
+#article-container .headerlink {
+  display: none !important;
 }
 
-.breadcrumb a:hover {
-  color: #3d4f58;
+/* 14. 搜索框 */
+#local-search-input {
+  border-radius: 8px;
+  border: 1px solid #e0e8ec;
+  background: #f8fafb;
 }
 
-
-/* ========================================
-   19. 深色模式 - 全局补充
-======================================== */
-
-[data-theme="dark"] .card-widget,
-[data-theme="dark"] #post {
-  background: rgba(35, 38, 45, 0.85);
-  border-color: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15),
-              0 4px 12px rgba(0, 0, 0, 0.1);
+#local-search-input:focus {
+  border-color: #2677a3;
+  box-shadow: 0 0 0 3px rgba(92, 124, 138, 0.1);
 }
 
+[data-theme="dark"] #local-search-input {
+  background: #252830;
+  border-color: #363a44;
+}
+
+[data-theme="dark"] #local-search-input:focus {
+  border-color: #2677a3;
+  box-shadow: 0 0 0 3px rgba(92, 124, 138, 0.15);
+}
+
+/* 15. 页脚 */
+#footer {
+  background: transparent;
+  border-top: 1px solid #eef2f4;
+  padding: 32px 0;
+  margin-top: 40px;
+}
+
+/* 16. 公告卡片 */
+.card-announcement {
+  background: linear-gradient(135deg, #fefefe 0%, #f5f3f0 100%) !important;
+}
+
+[data-theme="dark"] .card-announcement {
+  background: linear-gradient(135deg, #2a2a30 0%, #222228 100%) !important;
+}
+
+/* 17. 深色模式文章内容 */
 [data-theme="dark"] #article-container {
   color: #e5e7eb;
 }
 
 [data-theme="dark"] #article-container p {
   color: #e5e7eb;
-}
-
-[data-theme="dark"] #article-container blockquote {
-  color: #d1d5db;
 }
 
 [data-theme="dark"] #article-container h1,
@@ -1132,14 +858,8 @@ body {
   border-left-color: #4a5560;
 }
 
-[data-theme="dark"] #article-container blockquote {
-  background: #252830;
-  border-left-color: #4a5560;
-  color: #a0aab0;
-}
-
-[data-theme="dark"] #article-container table thead {
-  background: #252830;
+[data-theme="dark"] #article-container a {
+  color: #60a5fa;
 }
 
 [data-theme="dark"] #article-container th,
@@ -1147,83 +867,12 @@ body {
   border-bottom-color: #363a44;
 }
 
-[data-theme="dark"] #nav {
-  background: rgba(26, 29, 33, 0.9);
-  border-bottom-color: rgba(255, 255, 255, 0.06);
+[data-theme="dark"] #article-container th {
+  background: #252830;
 }
 
-[data-theme="dark"] .card-info {
-  background: linear-gradient(135deg, #252830 0%, #2a2d35 100%) !important;
-  border-color: #363a44;
-}
-
-[data-theme="dark"] .card-tag-cloud a {
-  background: #2a2d35;
-  border-color: #363a44;
-  color: #a0aab0;
-}
-
-[data-theme="dark"] .card-tag-cloud a:hover {
-  background: #363a44;
-  color: #c8cdd3;
-}
-
+/* 18. 深色模式选择 */
 [data-theme="dark"] ::selection {
   background: #3a4a54;
   color: #e0e4e8;
-}
-
-[data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: #4a5560;
-}
-
-[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-  background: #5a6570;
-}
-
-[data-theme="dark"] .item-headline {
-  border-bottom-color: #363a44;
-}
-
-
-/* ========================================
-   20. 页脚 - 简约
-======================================== */
-
-#footer {
-  background: transparent;
-  border-top: 1px solid #eef2f4;
-  padding: 32px 0;
-  margin-top: 40px;
-}
-
-[data-theme="dark"] #footer {
-  border-top-color: #363a44;
-}
-
-
-/* ========================================
-   21. 搜索框 - 统一风格
-======================================== */
-
-#local-search-input {
-  border-radius: 8px;
-  border: 1px solid #e0e8ec;
-  background: #f8fafb;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-#local-search-input:focus {
-  border-color: #2677a3;
-  box-shadow: 0 0 0 3px rgba(92, 124, 138, 0.1);
-}
-
-[data-theme="dark"] #local-search-input {
-  background: #252830;
-  border-color: #363a44;
-}
-
-[data-theme="dark"] #local-search-input:focus {
-  border-color: #2677a3;
-  box-shadow: 0 0 0 3px rgba(92, 124, 138, 0.15);
 }

@@ -1,0 +1,558 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>MongoDB基础知识 | Planck's Blog</title><meta name="author" content="Planck"><meta name="copyright" content="Planck"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#fafbfc"><meta name="description" content="MongoDB简介 MongoDB 是面向文档的 NoSQL 数据库，数据以 BSON（类 JSON 的二进制格式）文档存储，无需预定义表结构。  与 MySQL 概念对照：    MySQL MongoDB 说明    database database 数据库   table collection 集合，无固定结构   row document 文档   column field 字段   p">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MongoDB基础知识">
+<meta property="og:url" content="https://planck12-06.github.io/2026/09/16/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/index.html">
+<meta property="og:site_name" content="Planck&#39;s Blog">
+<meta property="og:description" content="MongoDB简介 MongoDB 是面向文档的 NoSQL 数据库，数据以 BSON（类 JSON 的二进制格式）文档存储，无需预定义表结构。  与 MySQL 概念对照：    MySQL MongoDB 说明    database database 数据库   table collection 集合，无固定结构   row document 文档   column field 字段   p">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://planck12-06.github.io/img/xi.png">
+<meta property="article:published_time" content="2026-09-16T09:35:29.000Z">
+<meta property="article:modified_time" content="2026-09-16T10:31:11.749Z">
+<meta property="article:author" content="Planck">
+<meta property="article:tag" content="MongoDB">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://planck12-06.github.io/img/xi.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MongoDB基础知识",
+  "url": "https://planck12-06.github.io/2026/09/16/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/",
+  "image": "https://planck12-06.github.io/img/xi.png",
+  "datePublished": "2026-09-16T09:35:29.000Z",
+  "dateModified": "2026-09-16T10:31:11.749Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Planck",
+      "url": "https://planck12-06.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://planck12-06.github.io/2026/09/16/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1a1d21')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fafbfc')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&amp;family=Playfair+Display:wght@400;700&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":3,"unescape":true,"pagination":{"enable":true,"hitsPerPage":10},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'MongoDB基础知识',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/Planck12-06.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">25</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">67</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">18</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fa-fw fab fa-github"></i><span> GitHub</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/xi.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Planck's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">MongoDB基础知识</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fa-fw fab fa-github"></i><span> GitHub</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">MongoDB基础知识</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-16T09:35:29.000Z" title="发表于 2026-09-16 17:35:29">2026-09-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-16T10:31:11.749Z" title="更新于 2026-09-16 18:31:11">2026-09-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/">中间件</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读大概需要时长:</span><span>10分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="MongoDB简介"><a href="#MongoDB简介" class="headerlink" title="MongoDB简介"></a>MongoDB简介</h1><blockquote>
+<p>MongoDB 是<strong>面向文档的 NoSQL 数据库</strong>，数据以 <strong>BSON</strong>（类 JSON 的二进制格式）文档存储，无需预定义表结构。</p>
+</blockquote>
+<p><strong>与 MySQL 概念对照</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>MySQL</th>
+<th>MongoDB</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>database</td>
+<td>database</td>
+<td>数据库</td>
+</tr>
+<tr>
+<td>table</td>
+<td><strong>collection</strong></td>
+<td>集合，无固定结构</td>
+</tr>
+<tr>
+<td>row</td>
+<td><strong>document</strong></td>
+<td>文档</td>
+</tr>
+<tr>
+<td>column</td>
+<td><strong>field</strong></td>
+<td>字段</td>
+</tr>
+<tr>
+<td>primary key</td>
+<td><strong>_id</strong></td>
+<td>主键，自动生成 <code>ObjectId</code></td>
+</tr>
+</tbody></table>
+<p><strong>核心特点</strong>：文档模型字段灵活、内嵌文档减少关联查询、天生支持分片水平扩展。</p>
+<hr>
+<h1 id="一、基础操作"><a href="#一、基础操作" class="headerlink" title="一、基础操作"></a>一、基础操作</h1><h2 id="（一）库与集合"><a href="#（一）库与集合" class="headerlink" title="（一）库与集合"></a>（一）库与集合</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">show dbs                  <span class="comment">// 查看所有数据库</span></span><br><span class="line">use test                  <span class="comment">// 创建/切换数据库</span></span><br><span class="line">db                        <span class="comment">// 查看当前数据库</span></span><br><span class="line">db.<span class="title function_">dropDatabase</span>()         <span class="comment">// 删除当前数据库</span></span><br><span class="line"></span><br><span class="line">show collections          <span class="comment">// 查看集合</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">drop</span>()           <span class="comment">// 删除集合</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>重点</strong>：<code>use</code> 不存在的库不会立即创建，<strong>插入数据后</strong>才真正落库；集合也<strong>无需显式创建</strong>，插入文档时自动创建。</p>
+</blockquote>
+<h2 id="（二）增删改查（CRUD）"><a href="#（二）增删改查（CRUD）" class="headerlink" title="（二）增删改查（CRUD）"></a>（二）增删改查（CRUD）</h2><p><strong>增（Insert）</strong>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">db.<span class="property">users</span>.<span class="title function_">insertOne</span>(&#123; <span class="attr">name</span>: <span class="string">&quot;张三&quot;</span>, <span class="attr">age</span>: <span class="number">20</span>, <span class="attr">tags</span>: [<span class="string">&quot;java&quot;</span>, <span class="string">&quot;mysql&quot;</span>] &#125;)</span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">insertMany</span>([&#123; <span class="attr">name</span>: <span class="string">&quot;李四&quot;</span>, <span class="attr">age</span>: <span class="number">22</span> &#125;, &#123; <span class="attr">name</span>: <span class="string">&quot;王五&quot;</span>, <span class="attr">age</span>: <span class="number">25</span> &#125;])</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>不指定 <code>_id</code> 时，MongoDB 自动生成全局唯一的 <code>ObjectId</code>。</p>
+</blockquote>
+<p><strong>查（Find）</strong>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">db.<span class="property">users</span>.<span class="title function_">find</span>()                          <span class="comment">// 查询全部</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">findOne</span>(&#123; <span class="attr">name</span>: <span class="string">&quot;张三&quot;</span> &#125;)        <span class="comment">// 查询一条</span></span><br><span class="line"></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">find</span>(&#123; <span class="attr">age</span>: &#123; <span class="attr">$gte</span>: <span class="number">20</span> &#125; &#125;)      <span class="comment">// 比较运算</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">find</span>(&#123; <span class="attr">$or</span>: [&#123; <span class="attr">age</span>: <span class="number">20</span> &#125;, &#123; <span class="attr">age</span>: <span class="number">25</span> &#125;] &#125;)   <span class="comment">// 逻辑运算</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">find</span>(&#123; <span class="attr">tags</span>: <span class="string">&quot;java&quot;</span> &#125;)           <span class="comment">// 数组字段包含</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">find</span>(&#123; <span class="attr">name</span>: <span class="regexp">/张/</span> &#125;)             <span class="comment">// 模糊查询（正则）</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">find</span>(&#123; <span class="attr">age</span>: &#123; <span class="attr">$gt</span>: <span class="number">20</span> &#125; &#125;, &#123; <span class="attr">name</span>: <span class="number">1</span>, <span class="attr">age</span>: <span class="number">1</span>, <span class="attr">_id</span>: <span class="number">0</span> &#125;)  <span class="comment">// 投影：1 显示 / 0 隐藏</span></span><br><span class="line"></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">find</span>().<span class="title function_">sort</span>(&#123; <span class="attr">age</span>: <span class="number">1</span> &#125;)          <span class="comment">// 排序：1 升序，-1 降序</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">find</span>().<span class="title function_">skip</span>(<span class="number">1</span>).<span class="title function_">limit</span>(<span class="number">2</span>)          <span class="comment">// 分页</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>常用查询运算符</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>含义</th>
+<th>运算符</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>$gt</code> &#x2F; <code>$gte</code></td>
+<td>大于 &#x2F; 大于等于</td>
+<td><code>$in</code> &#x2F; <code>$nin</code></td>
+<td>在 &#x2F; 不在集合内</td>
+</tr>
+<tr>
+<td><code>$lt</code> &#x2F; <code>$lte</code></td>
+<td>小于 &#x2F; 小于等于</td>
+<td><code>$and</code> &#x2F; <code>$or</code></td>
+<td>逻辑与 &#x2F; 或</td>
+</tr>
+<tr>
+<td><code>$ne</code></td>
+<td>不等于</td>
+<td><code>$exists</code></td>
+<td>字段是否存在</td>
+</tr>
+</tbody></table>
+<p><strong>改（Update）</strong>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">db.<span class="property">users</span>.<span class="title function_">updateOne</span>(&#123; <span class="attr">name</span>: <span class="string">&quot;张三&quot;</span> &#125;, &#123; <span class="attr">$set</span>: &#123; <span class="attr">age</span>: <span class="number">21</span>, <span class="attr">city</span>: <span class="string">&quot;北京&quot;</span> &#125; &#125;)  <span class="comment">// 修改字段</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">updateMany</span>(&#123; <span class="attr">age</span>: &#123; <span class="attr">$lt</span>: <span class="number">20</span> &#125; &#125;, &#123; <span class="attr">$set</span>: &#123; <span class="attr">status</span>: <span class="string">&quot;未成年&quot;</span> &#125; &#125;)   <span class="comment">// 批量修改</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">updateOne</span>(&#123; <span class="attr">name</span>: <span class="string">&quot;张三&quot;</span> &#125;, &#123; <span class="attr">$inc</span>: &#123; <span class="attr">age</span>: <span class="number">1</span> &#125; &#125;)                 <span class="comment">// 自增</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">updateOne</span>(&#123; <span class="attr">name</span>: <span class="string">&quot;张三&quot;</span> &#125;, &#123; <span class="attr">$unset</span>: &#123; <span class="attr">city</span>: <span class="string">&quot;&quot;</span> &#125; &#125;)             <span class="comment">// 删除字段</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">updateOne</span>(&#123; <span class="attr">name</span>: <span class="string">&quot;张三&quot;</span> &#125;, &#123; <span class="attr">$push</span>: &#123; <span class="attr">tags</span>: <span class="string">&quot;redis&quot;</span> &#125; &#125;)         <span class="comment">// 数组追加</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">updateOne</span>(&#123; <span class="attr">name</span>: <span class="string">&quot;张三&quot;</span> &#125;, &#123; <span class="attr">$pull</span>: &#123; <span class="attr">tags</span>: <span class="string">&quot;mysql&quot;</span> &#125; &#125;)         <span class="comment">// 数组移除</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>易错点</strong>：更新<strong>必须配合 <code>$set</code> 等更新运算符</strong>，否则会用新文档<strong>整体替换</strong>原文档，其他字段全部丢失。</p>
+</blockquote>
+<p><strong>删（Delete）</strong>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">db.<span class="property">users</span>.<span class="title function_">deleteOne</span>(&#123; <span class="attr">name</span>: <span class="string">&quot;张三&quot;</span> &#125;)     <span class="comment">// 删除单条</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">deleteMany</span>(&#123; <span class="attr">age</span>: &#123; <span class="attr">$lt</span>: <span class="number">18</span> &#125; &#125;)<span class="comment">// 删除多条</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">deleteMany</span>(&#123;&#125;)                  <span class="comment">// 清空集合</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="二、聚合操作（Aggregation）"><a href="#二、聚合操作（Aggregation）" class="headerlink" title="二、聚合操作（Aggregation）"></a>二、聚合操作（Aggregation）</h1><blockquote>
+<p><strong>聚合</strong>用于对文档分组、统计、计算，以<strong>管道（pipeline）</strong>形式执行，文档依次流经各阶段，等价于 SQL 的 <code>GROUP BY</code> + 函数。</p>
+</blockquote>
+<p><strong>常用管道阶段</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>作用</th>
+<th>类比 SQL</th>
+<th>阶段</th>
+<th>作用</th>
+<th>类比 SQL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>$match</code></td>
+<td>过滤文档</td>
+<td><code>WHERE</code></td>
+<td><code>$limit</code>&#x2F;<code>$skip</code></td>
+<td>限制&#x2F;跳过</td>
+<td><code>LIMIT</code></td>
+</tr>
+<tr>
+<td><code>$group</code></td>
+<td>分组计算</td>
+<td><code>GROUP BY</code></td>
+<td><code>$unwind</code></td>
+<td>拆解数组</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>$sort</code></td>
+<td>排序</td>
+<td><code>ORDER BY</code></td>
+<td><code>$lookup</code></td>
+<td>关联集合</td>
+<td><code>JOIN</code></td>
+</tr>
+<tr>
+<td><code>$project</code></td>
+<td>指定输出字段</td>
+<td><code>SELECT</code></td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p><strong>常用累加器</strong>（<code>$group</code> 内）：<code>$sum</code> 求和、<code>$avg</code> 平均、<code>$max</code>&#x2F;<code>$min</code> 最大最小、<code>$push</code>&#x2F;<code>$addToSet</code> 收集数组。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 分组统计 + 排序</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">aggregate</span>([</span><br><span class="line">    &#123; <span class="attr">$group</span>: &#123; <span class="attr">_id</span>: <span class="string">&quot;$age&quot;</span>, <span class="attr">count</span>: &#123; <span class="attr">$sum</span>: <span class="number">1</span> &#125; &#125; &#125;,</span><br><span class="line">    &#123; <span class="attr">$sort</span>: &#123; <span class="attr">count</span>: -<span class="number">1</span> &#125; &#125;</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line"><span class="comment">// 过滤后整体统计</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">aggregate</span>([</span><br><span class="line">    &#123; <span class="attr">$match</span>: &#123; <span class="attr">age</span>: &#123; <span class="attr">$gte</span>: <span class="number">20</span> &#125; &#125; &#125;,</span><br><span class="line">    &#123; <span class="attr">$group</span>: &#123; <span class="attr">_id</span>: <span class="literal">null</span>, <span class="attr">avgAge</span>: &#123; <span class="attr">$avg</span>: <span class="string">&quot;$age&quot;</span> &#125; &#125; &#125;</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line"><span class="comment">// $unwind 拆数组，统计每个 tag 出现次数</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">aggregate</span>([</span><br><span class="line">    &#123; <span class="attr">$unwind</span>: <span class="string">&quot;$tags&quot;</span> &#125;,</span><br><span class="line">    &#123; <span class="attr">$group</span>: &#123; <span class="attr">_id</span>: <span class="string">&quot;$tags&quot;</span>, <span class="attr">count</span>: &#123; <span class="attr">$sum</span>: <span class="number">1</span> &#125; &#125; &#125;</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line"><span class="comment">// $lookup 关联查询（类似 JOIN）</span></span><br><span class="line">db.<span class="property">orders</span>.<span class="title function_">aggregate</span>([</span><br><span class="line">    &#123; <span class="attr">$lookup</span>: &#123; <span class="attr">from</span>: <span class="string">&quot;users&quot;</span>, <span class="attr">localField</span>: <span class="string">&quot;userId&quot;</span>, <span class="attr">foreignField</span>: <span class="string">&quot;_id&quot;</span>, <span class="attr">as</span>: <span class="string">&quot;userInfo&quot;</span> &#125; &#125;</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>重点</strong>：<code>$group</code> 的 <code>_id</code> 是分组依据，写 <code>null</code> 表示整体统计；字段引用必须加 <code>$</code> 前缀；<code>$match</code> 应放管道最前，可提前缩小数据量。</p>
+</blockquote>
+<hr>
+<h1 id="三、索引（Index）"><a href="#三、索引（Index）" class="headerlink" title="三、索引（Index）"></a>三、索引（Index）</h1><blockquote>
+<p><strong>索引</strong>给字段建立有序结构，加速查询，避免全集合扫描（COLLSCAN）。</p>
+</blockquote>
+<p><strong>索引类型</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单字段 &#x2F; 复合索引</td>
+<td>单字段 &#x2F; 多字段组合，复合索引<strong>遵循最左前缀</strong></td>
+</tr>
+<tr>
+<td>唯一索引</td>
+<td>字段值不能重复</td>
+</tr>
+<tr>
+<td>文本索引</td>
+<td>支持全文检索</td>
+</tr>
+<tr>
+<td>TTL 索引</td>
+<td>文档到期自动删除</td>
+</tr>
+<tr>
+<td>地理空间索引</td>
+<td>2dsphere，支持位置查询</td>
+</tr>
+</tbody></table>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">db.<span class="property">users</span>.<span class="title function_">createIndex</span>(&#123; <span class="attr">name</span>: <span class="number">1</span> &#125;)                                  <span class="comment">// 单字段（1 升序 / -1 降序）</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">createIndex</span>(&#123; <span class="attr">age</span>: <span class="number">1</span>, <span class="attr">name</span>: -<span class="number">1</span> &#125;)                         <span class="comment">// 复合索引</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">createIndex</span>(&#123; <span class="attr">email</span>: <span class="number">1</span> &#125;, &#123; <span class="attr">unique</span>: <span class="literal">true</span> &#125;)               <span class="comment">// 唯一索引</span></span><br><span class="line">db.<span class="property">logs</span>.<span class="title function_">createIndex</span>(&#123; <span class="attr">createTime</span>: <span class="number">1</span> &#125;, &#123; <span class="attr">expireAfterSeconds</span>: <span class="number">3600</span> &#125;)<span class="comment">// TTL 索引（3600 秒后过期）</span></span><br><span class="line"></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">getIndexes</span>()               <span class="comment">// 查看索引</span></span><br><span class="line">db.<span class="property">users</span>.<span class="title function_">dropIndex</span>(&#123; <span class="attr">name</span>: <span class="number">1</span> &#125;)     <span class="comment">// 删除索引</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>执行计划（性能分析）</strong>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">db.<span class="property">users</span>.<span class="title function_">find</span>(&#123; <span class="attr">name</span>: <span class="string">&quot;张三&quot;</span> &#125;).<span class="title function_">explain</span>(<span class="string">&quot;executionStats&quot;</span>)</span><br><span class="line"><span class="comment">// stage: &quot;COLLSCAN&quot; → 全表扫描（慢）    stage: &quot;IXSCAN&quot; → 索引扫描（快）</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>重点</strong>：索引<strong>加快读、拖慢写</strong>，不宜滥用；复合索引 <code>&#123;a:1,b:1&#125;</code> 支持按 <code>a</code> 或 <code>a,b</code> 查，<strong>不支持只按 <code>b</code> 查</strong>。</p>
+</blockquote>
+<hr>
+<h1 id="四、Java-操作-MongoDB"><a href="#四、Java-操作-MongoDB" class="headerlink" title="四、Java 操作 MongoDB"></a>四、Java 操作 MongoDB</h1><h2 id="（一）依赖与配置"><a href="#（一）依赖与配置" class="headerlink" title="（一）依赖与配置"></a>（一）依赖与配置</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- Spring Boot 官方 starter（推荐） --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-data-mongodb<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">data:</span></span><br><span class="line">    <span class="attr">mongodb:</span></span><br><span class="line">      <span class="attr">uri:</span> <span class="string">mongodb://localhost:27017/test</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="（二）方式一：MongoTemplate（灵活，适合复杂查询）"><a href="#（二）方式一：MongoTemplate（灵活，适合复杂查询）" class="headerlink" title="（二）方式一：MongoTemplate（灵活，适合复杂查询）"></a>（二）方式一：MongoTemplate（灵活，适合复杂查询）</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Autowired</span></span><br><span class="line"><span class="keyword">private</span> MongoTemplate mongoTemplate;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 增</span></span><br><span class="line">mongoTemplate.save(user);      <span class="comment">// 有 _id 则更新，无则新增</span></span><br><span class="line">mongoTemplate.insert(user);    <span class="comment">// 强制新增</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 查（支持动态条件、分页、排序）</span></span><br><span class="line"><span class="type">Query</span> <span class="variable">query</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Query</span>(Criteria.where(<span class="string">&quot;age&quot;</span>).gte(<span class="number">20</span>));</span><br><span class="line">query.with(Sort.by(Sort.Direction.DESC, <span class="string">&quot;age&quot;</span>)).skip(<span class="number">0</span>).limit(<span class="number">10</span>);</span><br><span class="line">List&lt;User&gt; list = mongoTemplate.find(query, User.class);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 改</span></span><br><span class="line"><span class="type">Update</span> <span class="variable">update</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Update</span>().set(<span class="string">&quot;age&quot;</span>, <span class="number">21</span>).inc(<span class="string">&quot;score&quot;</span>, <span class="number">1</span>);</span><br><span class="line">mongoTemplate.updateFirst(Query.query(Criteria.where(<span class="string">&quot;name&quot;</span>).is(<span class="string">&quot;张三&quot;</span>)), update, User.class);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 删</span></span><br><span class="line">mongoTemplate.remove(Query.query(Criteria.where(<span class="string">&quot;name&quot;</span>).is(<span class="string">&quot;张三&quot;</span>)), User.class);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 聚合</span></span><br><span class="line"><span class="type">Aggregation</span> <span class="variable">agg</span> <span class="operator">=</span> Aggregation.newAggregation(</span><br><span class="line">    Aggregation.match(Criteria.where(<span class="string">&quot;age&quot;</span>).gte(<span class="number">20</span>)),</span><br><span class="line">    Aggregation.group(<span class="string">&quot;age&quot;</span>).count().as(<span class="string">&quot;count&quot;</span>),</span><br><span class="line">    Aggregation.sort(Sort.Direction.DESC, <span class="string">&quot;count&quot;</span>)</span><br><span class="line">);</span><br><span class="line">mongoTemplate.aggregate(agg, <span class="string">&quot;users&quot;</span>, Document.class);</span><br></pre></td></tr></table></figure>
+
+<h2 id="（三）方式二：MongoRepository（简单-CRUD）"><a href="#（三）方式二：MongoRepository（简单-CRUD）" class="headerlink" title="（三）方式二：MongoRepository（简单 CRUD）"></a>（三）方式二：MongoRepository（简单 CRUD）</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 实体类：@Document 指定集合，@Id 映射主键</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@Document(collection = &quot;users&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="keyword">private</span> String id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 接口继承 MongoRepository 即拥有基础 CRUD，方法名可自动推导查询</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserRepository</span> <span class="keyword">extends</span> <span class="title class_">MongoRepository</span>&lt;User, String&gt; &#123;</span><br><span class="line">    List&lt;User&gt; <span class="title function_">findByName</span><span class="params">(String name)</span>;                 <span class="comment">// 等价 find(&#123;name: &quot;xxx&quot;&#125;)</span></span><br><span class="line">    <span class="meta">@Query(&quot;&#123; &#x27;age&#x27;: &#123; $gte: ?0 &#125; &#125;&quot;)</span>                   <span class="comment">// 或用注解自定义</span></span><br><span class="line">    List&lt;User&gt; <span class="title function_">findByAgeGte</span><span class="params">(Integer age)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3. 调用</span></span><br><span class="line">userRepository.save(user);</span><br><span class="line">userRepository.findById(id);</span><br><span class="line">userRepository.deleteById(id);</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>MongoTemplate</strong></td>
+<td>复杂查询、聚合、动态条件</td>
+</tr>
+<tr>
+<td><strong>MongoRepository</strong></td>
+<td>简单标准 CRUD，开发效率高</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="五、高可用部署"><a href="#五、高可用部署" class="headerlink" title="五、高可用部署"></a>五、高可用部署</h1><blockquote>
+<p>单机 MongoDB 存在容量与单点故障的瓶颈，生产环境通过<strong>副本集</strong>与<strong>分片集群</strong>解决。</p>
+</blockquote>
+<h2 id="（一）副本集（Replica-Set）"><a href="#（一）副本集（Replica-Set）" class="headerlink" title="（一）副本集（Replica Set）"></a>（一）副本集（Replica Set）</h2><blockquote>
+<p>一组维护相同数据的节点集群，解决<strong>高可用 + 数据冗余</strong>。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Primary</strong></td>
+<td>唯一可读写的节点，写操作都走它</td>
+</tr>
+<tr>
+<td><strong>Secondary</strong></td>
+<td>从主节点同步数据，默认只读，可分担读请求</td>
+</tr>
+<tr>
+<td><strong>Arbiter</strong></td>
+<td>不存数据，只参与投票选举</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">客户端 ──写──→ Primary ──oplog复制──→ Secondary / Secondary</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>oplog</strong>：主节点记录写操作，从节点拉取重放以保持数据一致</li>
+<li><strong>故障转移</strong>：主节点宕机后，剩余节点<strong>自动选举</strong>出新主（默认几秒）</li>
+<li>标准架构为 <strong>1 Primary + 2 Secondary</strong>（三节点），保证挂一台仍能选举</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 启动节点（--replSet 指定副本集名）后初始化</span></span><br><span class="line">rs.<span class="title function_">initiate</span>(&#123;</span><br><span class="line">    <span class="attr">_id</span>: <span class="string">&quot;rs0&quot;</span>,</span><br><span class="line">    <span class="attr">members</span>: [</span><br><span class="line">        &#123; <span class="attr">_id</span>: <span class="number">0</span>, <span class="attr">host</span>: <span class="string">&quot;localhost:27017&quot;</span> &#125;,</span><br><span class="line">        &#123; <span class="attr">_id</span>: <span class="number">1</span>, <span class="attr">host</span>: <span class="string">&quot;localhost:27018&quot;</span> &#125;,</span><br><span class="line">        &#123; <span class="attr">_id</span>: <span class="number">2</span>, <span class="attr">host</span>: <span class="string">&quot;localhost:27019&quot;</span> &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;)</span><br><span class="line">rs.<span class="title function_">status</span>()   <span class="comment">// 查看状态，重点看 stateStr 是否为 PRIMARY</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>重点</strong>：连接串要带 <code>replicaSet=rs0</code> <strong>和多个节点地址</strong>，才能在主节点切换时自动重连；写仍集中在单 Primary，<strong>无法水平扩展写能力</strong>。</p>
+</blockquote>
+<h2 id="（二）分片集群（Sharded-Cluster）"><a href="#（二）分片集群（Sharded-Cluster）" class="headerlink" title="（二）分片集群（Sharded Cluster）"></a>（二）分片集群（Sharded Cluster）</h2><blockquote>
+<p>把数据分散到多个分片，解决单机<strong>存储容量与写入吞吐</strong>瓶颈，用于<strong>海量数据</strong>。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Shard（分片）</strong></td>
+<td>实际存储数据，<strong>每个分片本身是一个副本集</strong></td>
+</tr>
+<tr>
+<td><strong>Config Server</strong></td>
+<td>存储集群元数据（分片规则、数据分布）</td>
+</tr>
+<tr>
+<td><strong>Mongos</strong></td>
+<td>客户端统一入口，<strong>路由请求</strong>到对应分片，对客户端透明</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">客户端 ──→ Mongos ──→ Config Server(元数据)</span><br><span class="line">             │</span><br><span class="line">      ┌──────┼──────┐</span><br><span class="line">   Shard1  Shard2  Shard3 （均为副本集）</span><br></pre></td></tr></table></figure>
+
+<p><strong>分片键（Shard Key）</strong>：决定数据如何分布，是分片集群的核心设计点。</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>范围分片</td>
+<td>范围查询高效，但易<strong>数据倾斜</strong>（热点）</td>
+</tr>
+<tr>
+<td>哈希分片</td>
+<td>分布均匀，但范围查询需<strong>广播</strong></td>
+</tr>
+</tbody></table>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sh.<span class="title function_">enableSharding</span>(<span class="string">&quot;test&quot;</span>)                              <span class="comment">// 开启数据库分片</span></span><br><span class="line">sh.<span class="title function_">shardCollection</span>(<span class="string">&quot;test.users&quot;</span>, &#123; <span class="attr">userId</span>: <span class="string">&quot;hashed&quot;</span> &#125;) <span class="comment">// 按哈希分片键分片</span></span><br><span class="line">sh.<span class="title function_">status</span>()                                            <span class="comment">// 查看分片状态</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>重点</strong>：分片键选择至关重要——基数低、单调递增（如时间戳）的字段易造成<strong>热点</strong>，建议用<strong>哈希分片或复合分片键</strong>。</p>
+</blockquote>
+<hr>
+<h1 id="六、安全认证"><a href="#六、安全认证" class="headerlink" title="六、安全认证"></a>六、安全认证</h1><blockquote>
+<p>MongoDB 默认<strong>不开启认证</strong>，生产环境必须开启。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>认证 Authentication</td>
+<td>验证”你是谁”（账号密码）</td>
+</tr>
+<tr>
+<td>授权 Authorization</td>
+<td>验证”你能做什么”（角色权限）</td>
+</tr>
+</tbody></table>
+<p><strong>常用内置角色</strong>：<code>read</code> 只读、<code>readWrite</code> 读写、<code>dbAdmin</code> 库管理、<code>userAdmin</code> 用户管理、<code>root</code> 超级管理员。</p>
+<p><strong>开启认证步骤</strong>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 先以无认证方式启动，创建管理员用户</span></span><br><span class="line">use admin</span><br><span class="line">db.<span class="title function_">createUser</span>(&#123; <span class="attr">user</span>: <span class="string">&quot;admin&quot;</span>, <span class="attr">pwd</span>: <span class="string">&quot;123456&quot;</span>, <span class="attr">roles</span>: [&#123; <span class="attr">role</span>: <span class="string">&quot;root&quot;</span>, <span class="attr">db</span>: <span class="string">&quot;admin&quot;</span> &#125;] &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 创建业务库普通用户</span></span><br><span class="line">use test</span><br><span class="line">db.<span class="title function_">createUser</span>(&#123; <span class="attr">user</span>: <span class="string">&quot;appUser&quot;</span>, <span class="attr">pwd</span>: <span class="string">&quot;app123456&quot;</span>, <span class="attr">roles</span>: [&#123; <span class="attr">role</span>: <span class="string">&quot;readWrite&quot;</span>, <span class="attr">db</span>: <span class="string">&quot;test&quot;</span> &#125;] &#125;)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 3. 重启并开启认证</span></span><br><span class="line">mongod --auth --dbpath /data/db</span><br><span class="line"><span class="comment"># 或配置文件 security.authorization: enabled</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 4. 连接串：authSource 表示认证库</span></span><br><span class="line">mongodb://appUser:app123456@localhost:27017/test?authSource=<span class="built_in">test</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>其他安全措施</strong>：<code>bindIp</code> 限制内网访问（禁止暴露公网）、开启 TLS 传输加密、WiredTiger 存储加密、业务账号遵循<strong>最小权限</strong>。</p>
+<hr>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>一句话理解</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>基础操作</td>
+<td>增 <code>insert</code>、删 <code>delete</code>、改 <code>update</code>（**必须带 <code>$set</code>**）、查 <code>find</code></td>
+</tr>
+<tr>
+<td>聚合</td>
+<td><code>aggregate</code> 管道：<code>$match</code> 过滤 → <code>$group</code> 分组 → <code>$sort</code> 排序</td>
+</tr>
+<tr>
+<td>索引</td>
+<td>加快读、拖慢写；复合索引遵循<strong>最左前缀</strong></td>
+</tr>
+<tr>
+<td>Java 操作</td>
+<td>灵活用 <code>MongoTemplate</code>，简单用 <code>MongoRepository</code></td>
+</tr>
+<tr>
+<td>副本集</td>
+<td>多副本 + 自动故障转移，解决<strong>高可用</strong></td>
+</tr>
+<tr>
+<td>分片集群</td>
+<td>Mongos 路由 + Config 元数据 + 多 Shard，解决<strong>海量数据</strong></td>
+</tr>
+<tr>
+<td>安全认证</td>
+<td>建用户 → 开 <code>--auth</code> → 连接带 <code>authSource</code>，遵循<strong>最小权限</strong></td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://planck12-06.github.io">Planck</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://planck12-06.github.io/2026/09/16/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">https://planck12-06.github.io/2026/09/16/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://planck12-06.github.io" target="_blank">Planck's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MongoDB/">MongoDB</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></div><div class="post-share"><div class="social-share" data-image="/img/xi.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/09/12/nginx%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="nginx基础知识"><img class="cover" src="/img/atri1.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">nginx基础知识</div></div><div class="info-2"><div class="info-item-1">Nginx简介 Nginx 是一款高性能的 HTTP 和反向代理服务器，同时也是一个 IMAP &#x2F; POP3 &#x2F; SMTP 代理服务器。它以高并发、低内存、稳定著称，是后端部署中不可或缺的”流量入口”。  核心特点：    特点 说明    高并发 采用 epoll 多路复用 + 异步非阻塞 模型，单机可支撑数万并发连接   内存占用低 相比 Apache 的”一连接一进程&#x2F;线程”，Nginx 更轻量   稳定性高 单个 worker 异常不影响整体，具备平滑重启能力   配置灵活 通过配置文件即可完成代理、均衡、缓存、限流等   跨平台 Linux &#x2F; Windows &#x2F; macOS 均可运行，生产环境主要为 Linux   核心应用场景（本笔记主线）： 123456客户端 → [ Nginx ] → 后端服务器集群          │          ├─ 正向代理：替【客户端】访问外网          ├─ 反向代理：替【服务器】接收请求、转发给后端          ├─ 负载均衡：把请求分摊到多个后端实例     ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/04/redis%E5%85%A5%E9%97%A8/" title="Redis 入门"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-04</div><div class="info-item-2">Redis 入门</div></div><div class="info-2"><div class="info-item-1">Redis 概述Redis（Remote Dictionary Server，远程词典服务器）是一个开源的 key-value 数据库，可以用作数据库、缓存和消息中间件。 常见 NoSQL 数据库   类型 代表数据库    键值类型 Redis   文档类型 MongoDB   列类型 HBase   图类型 Neo4j   SQL 与 NoSQL 对比   对比项 SQL NoSQL    数据结构结构化非结构化 数据关联关联的无关联的 查询方式SQL 查询非 SQL 查询 事务特性ACIDBASE 存储方式磁盘内存 扩展性垂直水平 使用场景数据结构固定，对数据安全性、一致性要求高数据结构不固定，对性能要求高    Redis 特点   特点 说明    数据结构丰富 键值型，value 支持多种不同数据结构   单线程原子性 每个命令具备原子性   低延迟速度快 基于内存、IO 多路复用、良好的编码   持久化 支持数据持久化   高可用 支持主从集群、分片集群   多语言客户端 支持 Java、Python、Go 等多种语言    Redis 常见数据类型   数据类型 ...</div></div></div></a><a class="pagination-related" href="/2026/07/12/MySql%E5%9F%BA%E7%A1%80/" title="MySql基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-12</div><div class="info-item-2">MySql基础</div></div><div class="info-2"><div class="info-item-1">什么是数据库 数据库 (DataBase, DB)：存储数据的仓库，用于管理和存储数据。   数据库管理系统 (DBMS)：用于操纵和管理数据库的大型软件。   SQL (Structured Query Language)：结构化查询语言，定义了一套操作关系型数据库的统一标准。   结论：程序员给数据库管理系统 (DBMS) 发送 SQL 语句，再由数据库管理系统操作数据库当中的数据。  关系型数据库概念：关系型数据库 (RDBMS) 使用表格的形式来存储数据。表格由行和列组成，行代表记录，列代表字段。 代表产品：MySQL、Oracle、PostgreSQL、SQL Server 非关系型数据库概念：非关系型数据库 (NoSQL) 是一种新的数据存储方式，它不依赖于特定的数据模型，可以存储各种类型的数据（如键值对、文档、图形等）。 代表产品：Redis、MongoDB、ElasticSearch  SQL 语句分类   分类 全称 说明    DDL Data Definition Language 数据定义语言，用于定义数据库对象，如创建、修改、删除数据库、表、视图等   ...</div></div></div></a><a class="pagination-related no-desc" href="/2026/07/15/%E5%A4%9A%E8%A1%A8%E6%9F%A5%E8%AF%A2/" title="多表查询"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-15</div><div class="info-item-2">多表查询</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/Planck12-06.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Planck</div><div class="author-info-description">记录全栈+AI学习过程的博客</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">25</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">67</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">18</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到Planck的技术Blog🚀🚀</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#MongoDB%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">MongoDB简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">一、基础操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%80%EF%BC%89%E5%BA%93%E4%B8%8E%E9%9B%86%E5%90%88"><span class="toc-number">2.1.</span> <span class="toc-text">（一）库与集合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%BA%8C%EF%BC%89%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5%EF%BC%88CRUD%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">（二）增删改查（CRUD）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%81%9A%E5%90%88%E6%93%8D%E4%BD%9C%EF%BC%88Aggregation%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">二、聚合操作（Aggregation）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%B4%A2%E5%BC%95%EF%BC%88Index%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">三、索引（Index）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Java-%E6%93%8D%E4%BD%9C-MongoDB"><span class="toc-number">5.</span> <span class="toc-text">四、Java 操作 MongoDB</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%80%EF%BC%89%E4%BE%9D%E8%B5%96%E4%B8%8E%E9%85%8D%E7%BD%AE"><span class="toc-number">5.1.</span> <span class="toc-text">（一）依赖与配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%BA%8C%EF%BC%89%E6%96%B9%E5%BC%8F%E4%B8%80%EF%BC%9AMongoTemplate%EF%BC%88%E7%81%B5%E6%B4%BB%EF%BC%8C%E9%80%82%E5%90%88%E5%A4%8D%E6%9D%82%E6%9F%A5%E8%AF%A2%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">（二）方式一：MongoTemplate（灵活，适合复杂查询）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%89%EF%BC%89%E6%96%B9%E5%BC%8F%E4%BA%8C%EF%BC%9AMongoRepository%EF%BC%88%E7%AE%80%E5%8D%95-CRUD%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">（三）方式二：MongoRepository（简单 CRUD）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%AB%98%E5%8F%AF%E7%94%A8%E9%83%A8%E7%BD%B2"><span class="toc-number">6.</span> <span class="toc-text">五、高可用部署</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%80%EF%BC%89%E5%89%AF%E6%9C%AC%E9%9B%86%EF%BC%88Replica-Set%EF%BC%89"><span class="toc-number">6.1.</span> <span class="toc-text">（一）副本集（Replica Set）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%BA%8C%EF%BC%89%E5%88%86%E7%89%87%E9%9B%86%E7%BE%A4%EF%BC%88Sharded-Cluster%EF%BC%89"><span class="toc-number">6.2.</span> <span class="toc-text">（二）分片集群（Sharded Cluster）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%AE%89%E5%85%A8%E8%AE%A4%E8%AF%81"><span class="toc-number">7.</span> <span class="toc-text">六、安全认证</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">8.</span> <span class="toc-text">小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/09/16/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="MongoDB基础知识"><img src="/img/xi.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MongoDB基础知识"/></a><div class="content"><a class="title" href="/2026/09/16/MongoDB%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="MongoDB基础知识">MongoDB基础知识</a><time datetime="2026-09-16T09:35:29.000Z" title="发表于 2026-09-16 17:35:29">2026-09-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/12/nginx%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="nginx基础知识"><img src="/img/atri1.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="nginx基础知识"/></a><div class="content"><a class="title" href="/2026/09/12/nginx%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="nginx基础知识">nginx基础知识</a><time datetime="2026-09-12T03:38:14.000Z" title="发表于 2026-09-12 11:38:14">2026-09-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/07/ElasticSearch%E5%BC%B9%E6%80%A7%E6%90%9C%E7%B4%A2/" title="ElasticSearch弹性搜索"><img src="/img/nagisang1.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ElasticSearch弹性搜索"/></a><div class="content"><a class="title" href="/2026/09/07/ElasticSearch%E5%BC%B9%E6%80%A7%E6%90%9C%E7%B4%A2/" title="ElasticSearch弹性搜索">ElasticSearch弹性搜索</a><time datetime="2026-09-07T09:14:06.000Z" title="发表于 2026-09-07 17:14:06">2026-09-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/31/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" title="微服务"><img src="/img/yuzi.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="微服务"/></a><div class="content"><a class="title" href="/2026/08/31/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" title="微服务">微服务</a><time datetime="2026-08-31T12:24:33.000Z" title="发表于 2026-08-31 20:24:33">2026-08-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/19/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" title="分布式缓存">分布式缓存</a><time datetime="2026-08-19T08:51:10.000Z" title="发表于 2026-08-19 16:51:10">2026-08-19</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Planck</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.5"></script></div></div></body></html>
