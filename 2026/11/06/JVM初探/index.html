@@ -1,0 +1,974 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>JVM初探 | Planck's Blog</title><meta name="author" content="Planck"><meta name="copyright" content="Planck"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#faf8f3"><meta name="description" content="JVM 初探 本笔记按 「JVM 整体结构 → 类加载机制 → 对象创建 → 运行时内存区域 → 垃圾回收 → 调优排查」 的主线梳理 JVM 核心知识，便于复习时快速定位。  学习主线：    阶段 要回答的问题 对应内容    整体结构 JVM 由哪几部分组成 类加载器 + 运行时数据区 + 执行引擎   类怎么进来 .class 文件如何加载到内存 类加载过程、类加载器、双亲委派   对象怎">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM初探">
+<meta property="og:url" content="https://planck12-06.github.io/2026/11/06/JVM%E5%88%9D%E6%8E%A2/index.html">
+<meta property="og:site_name" content="Planck&#39;s Blog">
+<meta property="og:description" content="JVM 初探 本笔记按 「JVM 整体结构 → 类加载机制 → 对象创建 → 运行时内存区域 → 垃圾回收 → 调优排查」 的主线梳理 JVM 核心知识，便于复习时快速定位。  学习主线：    阶段 要回答的问题 对应内容    整体结构 JVM 由哪几部分组成 类加载器 + 运行时数据区 + 执行引擎   类怎么进来 .class 文件如何加载到内存 类加载过程、类加载器、双亲委派   对象怎">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://planck12-06.github.io/img/webp/xi.webp">
+<meta property="article:published_time" content="2026-11-06T10:10:46.000Z">
+<meta property="article:modified_time" content="2026-11-08T06:38:36.341Z">
+<meta property="article:author" content="Planck">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="类加载">
+<meta property="article:tag" content="垃圾回收">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://planck12-06.github.io/img/webp/xi.webp"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "JVM初探",
+  "url": "https://planck12-06.github.io/2026/11/06/JVM%E5%88%9D%E6%8E%A2/",
+  "image": "https://planck12-06.github.io/img/webp/xi.webp",
+  "datePublished": "2026-11-06T10:10:46.000Z",
+  "dateModified": "2026-11-08T06:38:36.341Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Planck",
+      "url": "https://planck12-06.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://planck12-06.github.io/2026/11/06/JVM%E5%88%9D%E6%8E%A2/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#12100c')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#faf8f3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":3,"unescape":true,"pagination":{"enable":true,"hitsPerPage":10},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JVM初探',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://github.com/Planck12-06.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">30</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">77</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fa-fw fab fa-github"></i><span> GitHub</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/webp/xi.webp);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Planck's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">JVM初探</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fa-fw fab fa-github"></i><span> GitHub</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">JVM初探</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-06T10:10:46.000Z" title="发表于 2026-11-06 18:10:46">2026-11-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-08T06:38:36.341Z" title="更新于 2026-11-08 14:38:36">2026-11-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java/">Java</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">4.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读大概需要时长:</span><span>15分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="JVM-初探"><a href="#JVM-初探" class="headerlink" title="JVM 初探"></a>JVM 初探</h1><blockquote>
+<p>本笔记按 <strong>「JVM 整体结构 → 类加载机制 → 对象创建 → 运行时内存区域 → 垃圾回收 → 调优排查」</strong> 的主线梳理 JVM 核心知识，便于复习时快速定位。</p>
+</blockquote>
+<p><strong>学习主线</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>要回答的问题</th>
+<th>对应内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>整体结构</td>
+<td>JVM 由哪几部分组成</td>
+<td>类加载器 + 运行时数据区 + 执行引擎</td>
+</tr>
+<tr>
+<td>类怎么进来</td>
+<td><code>.class</code> 文件如何加载到内存</td>
+<td>类加载过程、类加载器、双亲委派</td>
+</tr>
+<tr>
+<td>对象怎么造</td>
+<td>一个 <code>new</code> 背后发生了什么</td>
+<td>对象创建五步、对象内存布局</td>
+</tr>
+<tr>
+<td>数据放哪里</td>
+<td>各块内存存什么、会不会 OOM</td>
+<td>程序计数器、栈、堆、方法区</td>
+</tr>
+<tr>
+<td>怎么清理</td>
+<td>垃圾怎么判定、怎么回收</td>
+<td>GC 算法、分代回收</td>
+</tr>
+<tr>
+<td>出问题怎么办</td>
+<td>OOM &#x2F; 内存泄漏怎么排查</td>
+<td>MAT、JProfiler、转储参数</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="一、JVM-的整体位置与结构"><a href="#一、JVM-的整体位置与结构" class="headerlink" title="一、JVM 的整体位置与结构"></a>一、JVM 的整体位置与结构</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">.java 源码</span><br><span class="line">    ↓ javac 编译</span><br><span class="line">Class File（字节码）</span><br><span class="line">    ↓</span><br><span class="line">类加载器（ClassLoader）</span><br><span class="line">    ↓</span><br><span class="line">┌─────────────────────────────────────────────────┐</span><br><span class="line">│        运行时数据区（Runtime Data Area）          │</span><br><span class="line">│                                                 │</span><br><span class="line">│  方法区（元空间）     Java 栈      本地方法栈      │</span><br><span class="line">│                                                 │</span><br><span class="line">│  堆（Heap）          程序计数器                   │</span><br><span class="line">└─────────────────────────────────────────────────┘</span><br><span class="line">    ↕                                    ↕</span><br><span class="line">执行引擎  ←──── 本地方法接口 ←──── 本地方法库</span><br></pre></td></tr></table></figure>
+
+<p><strong>各部分职责</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>组成</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>类加载器</strong></td>
+<td>把 <code>.class</code> 字节码加载到 JVM 内存，生成 <code>Class</code> 对象</td>
+</tr>
+<tr>
+<td><strong>运行时数据区</strong></td>
+<td>存放类信息、对象实例、方法调用栈等运行时数据</td>
+</tr>
+<tr>
+<td><strong>执行引擎</strong></td>
+<td>解释执行 &#x2F; JIT 编译执行字节码</td>
+</tr>
+<tr>
+<td><strong>本地方法接口</strong></td>
+<td>调用 C&#x2F;C++ 实现的本地方法（<code>native</code>）</td>
+</tr>
+<tr>
+<td><strong>本地方法库</strong></td>
+<td>各平台底层的 native 库</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>重点</strong>：运行时数据区中，<strong>堆和方法区是线程共享</strong>的；<strong>Java 栈、本地方法栈、程序计数器是线程私有</strong>的。</p>
+</blockquote>
+<hr>
+<h1 id="二、类加载机制"><a href="#二、类加载机制" class="headerlink" title="二、类加载机制"></a>二、类加载机制</h1><h2 id="（一）类加载的整体流程"><a href="#（一）类加载的整体流程" class="headerlink" title="（一）类加载的整体流程"></a>（一）类加载的整体流程</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">加载 (Loading)</span><br><span class="line">   ↓</span><br><span class="line">验证 (Verification)     ┐</span><br><span class="line">准备 (Preparation)      ├── 链接 (Linking)</span><br><span class="line">解析 (Resolution)       ┘</span><br><span class="line">   ↓</span><br><span class="line">初始化 (Initialization)</span><br><span class="line">   ↓</span><br><span class="line">使用 (Using)</span><br><span class="line">   ↓</span><br><span class="line">卸载 (Unloading)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>主要动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>加载</strong></td>
+<td>通过类的全限定名获取二进制字节流（磁盘&#x2F;JAR&#x2F;网络），生成 <code>Class</code> 对象</td>
+</tr>
+<tr>
+<td><strong>验证</strong></td>
+<td>文件格式、元数据、字节码、符号引用验证</td>
+</tr>
+<tr>
+<td><strong>准备</strong></td>
+<td>为静态变量分配内存并设置<strong>零值</strong>（<code>static int a = 10</code> 此时 <code>a = 0</code>）</td>
+</tr>
+<tr>
+<td><strong>解析</strong></td>
+<td>将常量池中的符号引用替换为直接引用</td>
+</tr>
+<tr>
+<td><strong>初始化</strong></td>
+<td>执行 <code>&lt;clinit&gt;()</code>，为静态变量赋真实值、执行静态代码块</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>易错点</strong>：准备阶段只赋<strong>零值</strong>，真正的赋值 <code>10</code> 要到<strong>初始化</strong>阶段才执行。</p>
+</blockquote>
+<h2 id="（二）六种触发初始化的时机"><a href="#（二）六种触发初始化的时机" class="headerlink" title="（二）六种触发初始化的时机"></a>（二）六种触发初始化的时机</h2><p>有且仅有以下 6 种（主动引用）：</p>
+<ol>
+<li><code>new</code> 创建实例、访问静态字段、调用静态方法</li>
+<li>反射调用（<code>Class.forName</code>）</li>
+<li><strong>初始化子类时先初始化父类</strong></li>
+<li>虚拟机启动时的主类（含 <code>main</code> 方法）</li>
+<li><code>MethodHandle</code> 解析结果为 <code>REF_getStatic</code> 等</li>
+<li>接口中定义的 <code>default</code> 方法被实现类调用时</li>
+</ol>
+<blockquote>
+<p>其余引用（如通过数组定义引用类、访问 <code>static final</code> 常量）属于<strong>被动引用</strong>，不会触发初始化。</p>
+</blockquote>
+<h2 id="（三）类加载器层级"><a href="#（三）类加载器层级" class="headerlink" title="（三）类加载器层级"></a>（三）类加载器层级</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Bootstrap ClassLoader（启动类加载器，C++ 实现）</span><br><span class="line">        ↑</span><br><span class="line">Extension / Platform ClassLoader（扩展 / 平台类加载器）</span><br><span class="line">        ↑</span><br><span class="line">Application ClassLoader（应用程序类加载器，也叫系统类加载器）</span><br><span class="line">        ↑</span><br><span class="line">Custom ClassLoader（自定义类加载器）</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>类加载器</th>
+<th>加载路径</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Bootstrap</strong></td>
+<td><code>JAVA_HOME/jre/lib</code>（如 <code>rt.jar</code>）</td>
+<td>C++ 实现，<code>getClassLoader()</code> 返回 <code>null</code></td>
+</tr>
+<tr>
+<td><strong>Extension</strong>（JDK8）&#x2F; <strong>Platform</strong>（JDK9+）</td>
+<td><code>jre/lib/ext</code> 或 <code>jdk/modules</code></td>
+<td>加载扩展类</td>
+</tr>
+<tr>
+<td><strong>Application</strong></td>
+<td>classpath</td>
+<td>加载用户类路径上的类</td>
+</tr>
+<tr>
+<td><strong>Custom</strong></td>
+<td>自定义</td>
+<td>继承 <code>ClassLoader</code> 重写 <code>findClass</code></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>记忆点</strong>：Bootstrap 由 C++ 实现，不是 Java 类，所以 <code>String.class.getClassLoader()</code> 返回 <code>null</code>。</p>
+</blockquote>
+<h2 id="（四）双亲委派机制"><a href="#（四）双亲委派机制" class="headerlink" title="（四）双亲委派机制"></a>（四）双亲委派机制</h2><p><strong>工作流程</strong>：</p>
+<ol>
+<li>类加载器收到加载请求，<strong>先委派给父加载器</strong></li>
+<li>父加载器再委派给它的父加载器……直到 Bootstrap</li>
+<li>父加载器<strong>无法加载</strong>（自己搜索范围内找不到）时，子加载器才尝试自己加载</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">App ClassLoader → Ext ClassLoader → Bootstrap ClassLoader（最终先尝试）</span><br><span class="line">        ↑                                    │</span><br><span class="line">        └──────── 都失败才自己加载 ←──────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>JDK 源码实现</strong>（<code>ClassLoader.loadClass</code>）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="type">boolean</span> resolve) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (getClassLoadingLock(name)) &#123;</span><br><span class="line">        <span class="comment">// 1. 检查是否已加载</span></span><br><span class="line">        Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">        <span class="keyword">if</span> (c == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (parent != <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="comment">// 2. 委派给父加载器</span></span><br><span class="line">                    c = parent.loadClass(name, <span class="literal">false</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    c = findBootstrapClassOrNull(name);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">                <span class="comment">// 父加载器加载失败</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (c == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 3. 自己加载</span></span><br><span class="line">                c = findClass(name);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> c;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>双亲委派的优势</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>优势</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>安全性</strong></td>
+<td>防止核心类库被篡改（自定义 <code>java.lang.String</code> 不会被加载）</td>
+</tr>
+<tr>
+<td><strong>唯一性</strong></td>
+<td>同一个类在 JVM 中只被加载一次，避免重复加载</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>重点</strong>：双亲委派<strong>不是强制约束</strong>，而是 <code>ClassLoader.loadClass()</code> 的默认实现。子类重写 <code>loadClass()</code> 即可打破。</p>
+</blockquote>
+<h2 id="（五）自定义类加载器"><a href="#（五）自定义类加载器" class="headerlink" title="（五）自定义类加载器"></a>（五）自定义类加载器</h2><p><strong>方式一：重写 <code>findClass</code>（遵循双亲委派）</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyClassLoader</span> <span class="keyword">extends</span> <span class="title class_">ClassLoader</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String classPath;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MyClassLoader</span><span class="params">(String classPath)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.classPath = classPath;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Class&lt;?&gt; findClass(String name) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">byte</span>[] data = loadByte(name);</span><br><span class="line">            <span class="keyword">return</span> defineClass(name, data, <span class="number">0</span>, data.length);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ClassNotFoundException</span>(name, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">byte</span>[] loadByte(String name) <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        name = name.replace(<span class="string">&#x27;.&#x27;</span>, <span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">InputStream</span> <span class="variable">in</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(classPath + <span class="string">&quot;/&quot;</span> + name + <span class="string">&quot;.class&quot;</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> in.readAllBytes();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>方式二：重写 <code>loadClass</code>（打破双亲委派）</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="type">boolean</span> resolve) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (getClassLoadingLock(name)) &#123;</span><br><span class="line">        Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">        <span class="keyword">if</span> (c == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 不委派，直接自己加载（某些场景下）</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                c = findClass(name);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">                <span class="comment">// 自己加载失败再委派</span></span><br><span class="line">                <span class="keyword">if</span> (parent != <span class="literal">null</span>) &#123;</span><br><span class="line">                    c = parent.loadClass(name, <span class="literal">false</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (resolve) resolveClass(c);</span><br><span class="line">        <span class="keyword">return</span> c;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="（六）打破双亲委派的经典场景"><a href="#（六）打破双亲委派的经典场景" class="headerlink" title="（六）打破双亲委派的经典场景"></a>（六）打破双亲委派的经典场景</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>原因</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SPI 机制</strong>（JDBC、JNDI）</td>
+<td>核心接口由 Bootstrap 加载，实现类在 classpath 上</td>
+<td><strong>线程上下文类加载器（TCCL）</strong></td>
+</tr>
+<tr>
+<td><strong>Tomcat</strong></td>
+<td>应用间类隔离，应用需优先加载自己的类</td>
+<td><code>WebappClassLoader</code> 先自己加载，找不到再委派</td>
+</tr>
+<tr>
+<td><strong>OSGi</strong></td>
+<td>模块化热部署</td>
+<td>网状委派模型</td>
+</tr>
+<tr>
+<td><strong>Spring Boot</strong></td>
+<td>加载嵌套 JAR</td>
+<td><code>LaunchedURLClassLoader</code></td>
+</tr>
+<tr>
+<td><strong>热部署 &#x2F; 热替换</strong></td>
+<td>修改类后重新加载</td>
+<td>自定义 ClassLoader，丢弃旧实例</td>
+</tr>
+</tbody></table>
+<p><strong>核心 API</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ClassLoader.getSystemClassLoader()              <span class="comment">// 获取 App ClassLoader</span></span><br><span class="line">Thread.currentThread().getContextClassLoader()  <span class="comment">// 获取 TCCL（线程上下文类加载器）</span></span><br><span class="line">Class.forName(<span class="string">&quot;X&quot;</span>)                              <span class="comment">// 加载 + 初始化</span></span><br><span class="line">ClassLoader.loadClass(<span class="string">&quot;X&quot;</span>)                      <span class="comment">// 只加载，不初始化</span></span><br><span class="line">Class.getClassLoader()                          <span class="comment">// Bootstrap 返回 null</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>对比记忆</strong>：<code>Class.forName</code> <strong>会</strong>触发初始化，<code>loadClass</code> <strong>不会</strong>。这是 JDBC 驱动注册的经典考点。</p>
+</blockquote>
+<hr>
+<h1 id="三、对象的创建过程"><a href="#三、对象的创建过程" class="headerlink" title="三、对象的创建过程"></a>三、对象的创建过程</h1><h2 id="（一）创建对象的几种方式"><a href="#（一）创建对象的几种方式" class="headerlink" title="（一）创建对象的几种方式"></a>（一）创建对象的几种方式</h2><table>
+<thead>
+<tr>
+<th>方式</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>new</code> 关键字</td>
+<td><code>new User()</code></td>
+</tr>
+<tr>
+<td>反射</td>
+<td><code>Class.newInstance()</code>、<code>Constructor.newInstance()</code></td>
+</tr>
+<tr>
+<td><code>clone()</code></td>
+<td>复制已有对象，<strong>不走构造方法</strong></td>
+</tr>
+<tr>
+<td>反序列化</td>
+<td><code>ObjectInputStream.readObject()</code>，<strong>不走构造方法</strong></td>
+</tr>
+<tr>
+<td>工厂方法 &#x2F; 静态方法</td>
+<td>内部终究还是 <code>new</code></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>注意</strong>：<code>clone</code> 和反序列化<strong>不会调用构造方法</strong>，但依然会分配内存并初始化对象头。</p>
+</blockquote>
+<h2 id="（二）对象创建的五个步骤"><a href="#（二）对象创建的五个步骤" class="headerlink" title="（二）对象创建的五个步骤"></a>（二）对象创建的五个步骤</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">1. 类加载检查</span><br><span class="line">      ↓</span><br><span class="line">2. 分配内存</span><br><span class="line">      ↓</span><br><span class="line">3. 内存空间零值初始化</span><br><span class="line">      ↓</span><br><span class="line">4. 设置对象头</span><br><span class="line">      ↓</span><br><span class="line">5. 执行 &lt;init&gt; 构造方法</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>① 类加载检查</strong></td>
+<td>检查 <code>new</code> 的类是否已加载，未加载则先走类加载流程</td>
+</tr>
+<tr>
+<td><strong>② 分配内存</strong></td>
+<td>在堆中划出内存。用<strong>指针碰撞</strong>（规整内存）或<strong>空闲列表</strong>（碎片内存）；并发下用 <strong>CAS + 失败重试</strong> 或 <strong>TLAB（本地线程分配缓冲）</strong></td>
+</tr>
+<tr>
+<td><strong>③ 零值初始化</strong></td>
+<td>将分配的内存空间全部置为<strong>零值</strong>（保证实例字段有默认值）</td>
+</tr>
+<tr>
+<td><strong>④ 设置对象头</strong></td>
+<td>写入 Mark Word、Klass Pointer、数组长度（若是数组）</td>
+</tr>
+<tr>
+<td><strong>⑤ 执行 <code>&lt;init&gt;</code></strong></td>
+<td>执行构造方法，此时才真正完成对象的初始化</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>顺序易错</strong>：③ 零值初始化 → ④ 对象头 → ⑤ 构造方法。所以构造方法里能访问到的父类字段可能还是零值。</p>
+</blockquote>
+<h2 id="（三）对象内存布局"><a href="#（三）对象内存布局" class="headerlink" title="（三）对象内存布局"></a>（三）对象内存布局</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────┐</span><br><span class="line">│        对象头 (Header)       │</span><br><span class="line">│  ┌───────────────────────┐  │</span><br><span class="line">│  │ Mark Word (8字节, 64位)│  │</span><br><span class="line">│  ├───────────────────────┤   │</span><br><span class="line">│  │ Klass Pointer (4/8字节)│  │</span><br><span class="line">│  ├───────────────────────┤   │</span><br><span class="line">│  │ 数组长度 (仅数组, 4字节)│  │</span><br><span class="line">│  └───────────────────────┘  │</span><br><span class="line">├─────────────────────────────┤</span><br><span class="line">│   实例数据 (Instance Data)   │  ← 父类字段在前，子类在后；同宽字段相邻</span><br><span class="line">├─────────────────────────────┤</span><br><span class="line">│   对齐填充 (Padding)         │  ← 补齐到 8 字节整数倍</span><br><span class="line">└─────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>Mark Word 在 64 位下的状态复用</strong>（<strong>重点，面试高频</strong>）：</p>
+<table>
+<thead>
+<tr>
+<th>锁状态</th>
+<th>存储内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>无锁</td>
+<td>hash(31) + 分代年龄(4) + 偏向标志(1) + 锁标志(01)</td>
+</tr>
+<tr>
+<td>偏向锁</td>
+<td>线程ID(54) + epoch(2) + 分代年龄(4) + 偏向标志(1) + 锁标志(01)</td>
+</tr>
+<tr>
+<td>轻量级锁</td>
+<td>指向栈中锁记录的指针 + 锁标志(00)</td>
+</tr>
+<tr>
+<td>重量级锁</td>
+<td>指向 Monitor 的指针 + 锁标志(10)</td>
+</tr>
+<tr>
+<td>GC 标记</td>
+<td>空 + 锁标志(11)</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Mark Word 只有 64 位却要存这么多信息，靠的是<strong>按状态复用同一块空间</strong>。</p>
+</blockquote>
+<h2 id="（四）-与-的区别"><a href="#（四）-与-的区别" class="headerlink" title="（四）&lt;init&gt; 与 &lt;clinit&gt; 的区别"></a>（四）<code>&lt;init&gt;</code> 与 <code>&lt;clinit&gt;</code> 的区别</h2><table>
+<thead>
+<tr>
+<th>对比项</th>
+<th><code>&lt;init&gt;()</code></th>
+<th><code>&lt;clinit&gt;()</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>对应</td>
+<td><strong>实例构造方法</strong></td>
+<td><strong>类静态初始化</strong></td>
+</tr>
+<tr>
+<td>触发时机</td>
+<td>对象实例化时（<code>new</code>、反射等）</td>
+<td>类初始化时（首次主动使用）</td>
+</tr>
+<tr>
+<td>内容</td>
+<td>实例字段赋值、实例代码块、构造方法体</td>
+<td>静态字段赋值、静态代码块</td>
+</tr>
+<tr>
+<td>执行次数</td>
+<td>每创建一个对象执行一次</td>
+<td>每个类加载器只执行一次</td>
+</tr>
+<tr>
+<td>父类关系</td>
+<td>隐式调用 <code>super()</code>（第一句）</td>
+<td>隐式先执行父类 <code>&lt;clinit&gt;</code></td>
+</tr>
+</tbody></table>
+<h2 id="（五）父子类完整实例化顺序"><a href="#（五）父子类完整实例化顺序" class="headerlink" title="（五）父子类完整实例化顺序"></a>（五）父子类完整实例化顺序</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">1. 加载 Father 和 Son 类（如果还没加载，走类加载流程）</span><br><span class="line">2. 执行 Father 的 &lt;clinit&gt;（静态变量、静态块）</span><br><span class="line">3. 执行 Son 的 &lt;clinit&gt;</span><br><span class="line">4. 分配 Son 对象内存</span><br><span class="line">5. 零值初始化（所有实例字段，含继承来的）</span><br><span class="line">6. 设置对象头</span><br><span class="line">7. 执行 Father 的 &lt;init&gt;</span><br><span class="line">   ├── Father 实例字段显式赋值</span><br><span class="line">   ├── Father 实例代码块</span><br><span class="line">   └── Father 构造方法体</span><br><span class="line">8. 执行 Son 的 &lt;init&gt;</span><br><span class="line">   ├── Son 实例字段显式赋值</span><br><span class="line">   ├── Son 实例代码块</span><br><span class="line">   └── Son 构造方法体</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>一句话记忆</strong>：<strong>类初始化先父后子，对象实例化也先父后子；先静态后实例，先零值后赋值。</strong></p>
+</blockquote>
+<h2 id="（六）延伸：对象一定在堆上吗？"><a href="#（六）延伸：对象一定在堆上吗？" class="headerlink" title="（六）延伸：对象一定在堆上吗？"></a>（六）延伸：对象一定在堆上吗？</h2><p><strong>不一定</strong>。HotSpot 的<strong>逃逸分析（Escape Analysis）</strong>会判断对象是否逃逸出方法 &#x2F; 线程：</p>
+<table>
+<thead>
+<tr>
+<th>优化</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>栈上分配</strong></td>
+<td>对象未逃逸 → 直接在栈帧分配，随栈帧销毁，<strong>无需 GC</strong></td>
+</tr>
+<tr>
+<td><strong>标量替换</strong></td>
+<td>对象可拆解为多个基本类型变量，不真正创建对象</td>
+</tr>
+<tr>
+<td><strong>锁消除</strong></td>
+<td>对象仅线程内可见 → 去掉同步</td>
+</tr>
+</tbody></table>
+<p>可通过 <code>-XX:+DoEscapeAnalysis</code> 开启（JDK 默认开启）。</p>
+<blockquote>
+<p>这解释了为什么”Java 对象都在堆上”这种说法在 JIT 优化后并不严格成立。</p>
+</blockquote>
+<hr>
+<h1 id="四、运行时数据区"><a href="#四、运行时数据区" class="headerlink" title="四、运行时数据区"></a>四、运行时数据区</h1><table>
+<thead>
+<tr>
+<th>区域</th>
+<th>线程</th>
+<th>作用</th>
+<th>是否 OOM</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>程序计数器</strong></td>
+<td>私有</td>
+<td>记录当前线程执行的字节码行号</td>
+<td><strong>不会</strong></td>
+</tr>
+<tr>
+<td><strong>Java 虚拟机栈</strong></td>
+<td>私有</td>
+<td>存放栈帧（局部变量表、操作数栈等）</td>
+<td>StackOverflowError &#x2F; OOM</td>
+</tr>
+<tr>
+<td><strong>本地方法栈</strong></td>
+<td>私有</td>
+<td>为 native 方法服务</td>
+<td>SOE &#x2F; OOM</td>
+</tr>
+<tr>
+<td><strong>堆</strong></td>
+<td>共享</td>
+<td>存放对象实例、数组</td>
+<td><strong>OOM 主战场</strong></td>
+</tr>
+<tr>
+<td><strong>方法区</strong></td>
+<td>共享</td>
+<td>类信息、常量、静态变量</td>
+<td>OOM</td>
+</tr>
+</tbody></table>
+<h2 id="（一）程序计数器（PC-Register）"><a href="#（一）程序计数器（PC-Register）" class="headerlink" title="（一）程序计数器（PC Register）"></a>（一）程序计数器（PC Register）</h2><ul>
+<li><strong>线程私有</strong>，每个线程一份</li>
+<li>记录当前线程正在执行的<strong>字节码指令地址</strong></li>
+<li>唯一一个<strong>不会抛出 OOM</strong> 的区域</li>
+<li>执行 native 方法时值为 <code>undefined</code></li>
+</ul>
+<h2 id="（二）Java-虚拟机栈"><a href="#（二）Java-虚拟机栈" class="headerlink" title="（二）Java 虚拟机栈"></a>（二）Java 虚拟机栈</h2><ul>
+<li><strong>线程私有</strong>，生命周期与线程相同</li>
+<li>每个方法执行时创建一个<strong>栈帧（Stack Frame）</strong>入栈，方法返回时出栈</li>
+<li><strong>程序正在执行的方法一定在栈顶</strong></li>
+</ul>
+<p><strong>栈帧结构</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>组成</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>局部变量表</strong></td>
+<td>存放方法参数和局部变量（基本类型、对象引用）</td>
+</tr>
+<tr>
+<td><strong>操作数栈</strong></td>
+<td>字节码运算的工作区</td>
+</tr>
+<tr>
+<td><strong>动态链接</strong></td>
+<td>指向运行时常量池中该方法的符号引用</td>
+</tr>
+<tr>
+<td><strong>方法返回地址</strong></td>
+<td>方法退出后继续执行的位置</td>
+</tr>
+</tbody></table>
+<p><strong>两种异常</strong>：</p>
+<ul>
+<li><strong>StackOverflowError</strong>：栈深度超过限制（如无限递归）</li>
+<li><strong>OutOfMemoryError</strong>：栈扩展时无法申请到足够内存</li>
+</ul>
+<blockquote>
+<p><strong>设置参数</strong>：<code>-Xss</code> 设置单个线程栈大小。</p>
+</blockquote>
+<h2 id="（三）堆（Heap）"><a href="#（三）堆（Heap）" class="headerlink" title="（三）堆（Heap）"></a>（三）堆（Heap）</h2><p><strong>JVM 内存中最大的一块</strong>，线程共享，几乎所有对象实例都在这里分配。</p>
+<p><strong>分代结构</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">┌──────────────────────────────────────────────┐</span><br><span class="line">│                  堆 (Heap)                   │</span><br><span class="line">│ ┌───────────────────────┬──────────────────┐ │</span><br><span class="line">│ │      新生代 (Young)     │  老年代 (Old)   │ │</span><br><span class="line">│ │ ┌──────┬─────┬─────┐  │                  │ │</span><br><span class="line">│ │ │ Eden │ S0  │ S1  │  │                  │ │</span><br><span class="line">│ │ └──────┴─────┴─────┘  │                  │ │</span><br><span class="line">│ └───────────────────────┴──────────────────┘ │</span><br><span class="line">└──────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>区域</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Eden</strong></td>
+<td>新对象优先在此分配</td>
+</tr>
+<tr>
+<td><strong>Survivor 0 &#x2F; 1</strong></td>
+<td>经过 Minor GC 存活的对象在两区间来回复制</td>
+</tr>
+<tr>
+<td><strong>Old（老年代）</strong></td>
+<td>存活够久或对象过大时晋升到此</td>
+</tr>
+</tbody></table>
+<p><strong>默认比例</strong>：Eden : S0 : S1 &#x3D; <strong>8 : 1 : 1</strong>；新生代 : 老年代 &#x3D; <strong>1 : 2</strong></p>
+<p><strong>关联参数</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-Xms</code></td>
+<td>堆初始大小</td>
+</tr>
+<tr>
+<td><code>-Xmx</code></td>
+<td>堆最大大小</td>
+</tr>
+<tr>
+<td><code>-Xmn</code></td>
+<td>新生代大小</td>
+</tr>
+<tr>
+<td><code>-XX:NewRatio</code></td>
+<td>新生代与老年代比例</td>
+</tr>
+<tr>
+<td><code>-XX:SurvivorRatio</code></td>
+<td>Eden 与单个 Survivor 比例</td>
+</tr>
+</tbody></table>
+<h2 id="（四）方法区"><a href="#（四）方法区" class="headerlink" title="（四）方法区"></a>（四）方法区</h2><ul>
+<li><strong>线程共享</strong>，存放<strong>类元信息、常量、静态变量、JIT 编译后的代码</strong></li>
+<li><strong>JDK 7 及以前</strong>：<strong>永久代（PermGen）</strong>，属于堆内存，受 <code>-XX:MaxPermSize</code> 限制</li>
+<li><strong>JDK 8 及以后</strong>：<strong>元空间（Metaspace）</strong>，使用<strong>本地内存</strong></li>
+</ul>
+<blockquote>
+<p><strong>元空间特性</strong>：「<strong>逻辑上存在，物理上不存在</strong>」—— 逻辑上属于方法区，物理上不在 JVM 堆内，而是直接使用本地内存，因此默认不受堆大小限制（受本机内存限制）。</p>
+</blockquote>
+<p><strong>演进对比</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>实现</th>
+<th>位置</th>
+<th>参数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>JDK 7-</td>
+<td>永久代</td>
+<td>JVM 堆内</td>
+<td><code>-XX:MaxPermSize</code></td>
+</tr>
+<tr>
+<td>JDK 8+</td>
+<td>元空间</td>
+<td><strong>本地内存</strong></td>
+<td><code>-XX:MaxMetaspaceSize</code></td>
+</tr>
+</tbody></table>
+<p><strong>为什么改元空间</strong>：永久代大小难以预估，容易 OOM；元空间使用本地内存后更灵活。</p>
+<hr>
+<h1 id="五、沙箱安全机制"><a href="#五、沙箱安全机制" class="headerlink" title="五、沙箱安全机制"></a>五、沙箱安全机制</h1><p><strong>沙箱机制</strong>：将 Java 代码限定在 JVM 中特定的运行范围，并<strong>严格限制对系统本地资源（文件、网络、系统调用）的访问</strong>。</p>
+<p><strong>核心思想</strong>：</p>
+<ul>
+<li>不可信代码（如远程加载的 Applet）运行在受限的沙箱中</li>
+<li>沙箱通过 <code>ClassLoader</code> + <code>SecurityManager</code> + 访问控制器协同实现</li>
+<li>不同来源的类由不同类加载器加载，赋予不同权限</li>
+</ul>
+<blockquote>
+<p>双亲委派正是沙箱安全的基础之一 —— 它保证了<strong>核心类库不会被自定义类篡改</strong>。</p>
+</blockquote>
+<hr>
+<h1 id="六、垃圾回收（GC）机制"><a href="#六、垃圾回收（GC）机制" class="headerlink" title="六、垃圾回收（GC）机制"></a>六、垃圾回收（GC）机制</h1><blockquote>
+<p><strong>垃圾回收只发生在堆（和方法区），不会发生在栈空间中</strong> —— 栈帧随方法调用自动入栈出栈，无需 GC。</p>
+</blockquote>
+<h2 id="（一）如何判定是垃圾"><a href="#（一）如何判定是垃圾" class="headerlink" title="（一）如何判定是垃圾"></a>（一）如何判定是垃圾</h2><table>
+<thead>
+<tr>
+<th>算法</th>
+<th>说明</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>引用计数法</strong></td>
+<td>对象被引用则计数 +1，归零即回收</td>
+<td><strong>无法解决循环引用</strong></td>
+</tr>
+<tr>
+<td><strong>可达性分析</strong>（Java 采用）</td>
+<td>从 <strong>GC Roots</strong> 出发，不可达的对象即为垃圾</td>
+<td>——</td>
+</tr>
+</tbody></table>
+<p><strong>GC Roots 包括</strong>：</p>
+<ul>
+<li>虚拟机栈中局部变量表引用的对象</li>
+<li>方法区中静态变量、常量引用的对象</li>
+<li>本地方法栈中 native 方法引用的对象</li>
+<li>虚拟机内部的引用（基本类型 Class、常驻异常对象等）</li>
+<li>被 <code>synchronized</code> 持有的对象</li>
+</ul>
+<p><strong>对象的”死亡”要经历两次标记</strong>：</p>
+<ol>
+<li>可达性分析后<strong>不可达</strong> → 第一次标记</li>
+<li>检查是否重写了 <code>finalize()</code> 且未执行过 → 若需要执行，放入 F-Queue，<strong>第二次标记</strong>仍不可达才真正回收</li>
+</ol>
+<h2 id="（二）垃圾回收算法"><a href="#（二）垃圾回收算法" class="headerlink" title="（二）垃圾回收算法"></a>（二）垃圾回收算法</h2><table>
+<thead>
+<tr>
+<th>算法</th>
+<th>原理</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>标记-清除</strong></td>
+<td>标记存活对象，清除其余</td>
+<td>实现简单</td>
+<td><strong>内存碎片</strong>、效率低</td>
+</tr>
+<tr>
+<td><strong>标记-复制</strong></td>
+<td>存活对象复制到另一块区域</td>
+<td>无碎片、效率高</td>
+<td><strong>浪费空间</strong></td>
+</tr>
+<tr>
+<td><strong>标记-整理</strong></td>
+<td>标记后把存活对象移向一端</td>
+<td>无碎片</td>
+<td>移动成本高</td>
+</tr>
+<tr>
+<td><strong>分代收集</strong></td>
+<td>新生代用复制，老年代用标记-清除&#x2F;整理</td>
+<td>综合最优</td>
+<td>——</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>分代依据</strong>：绝大多数对象<strong>朝生夕死</strong>（弱分代假说），因此新生代用复制算法更划算。</p>
+</blockquote>
+<h2 id="（三）分代回收流程"><a href="#（三）分代回收流程" class="headerlink" title="（三）分代回收流程"></a>（三）分代回收流程</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">新对象 → Eden</span><br><span class="line">          ↓ Eden 满 触发 Minor GC</span><br><span class="line">       存活对象 → S0（年龄 +1）</span><br><span class="line">          ↓ 再次 Minor GC</span><br><span class="line">       S0 存活对象 → S1（年龄 +1），Eden 清空</span><br><span class="line">          ↓ 对象在两 Survivor 间来回复制</span><br><span class="line">       年龄达到阈值（默认 15）→ 晋升老年代</span><br><span class="line">          ↓ 老年代满</span><br><span class="line">       触发 Full GC</span><br></pre></td></tr></table></figure>
+
+<p><strong>两种 GC</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>触发时机</th>
+<th>范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Minor GC &#x2F; Young GC</strong></td>
+<td>Eden 区满</td>
+<td>只回收新生代（<strong>频繁</strong>）</td>
+</tr>
+<tr>
+<td><strong>Full GC</strong></td>
+<td>老年代满、元空间不足、显式 <code>System.gc()</code></td>
+<td>整个堆 + 方法区（<strong>慢</strong>，应尽量避免）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>易错点</strong>：大对象（如超长数组）会<strong>直接进入老年代</strong>，可通过 <code>-XX:PretenureSizeThreshold</code> 设置阈值。</p>
+</blockquote>
+<hr>
+<h1 id="七、OOM-排查"><a href="#七、OOM-排查" class="headerlink" title="七、OOM 排查"></a>七、OOM 排查</h1><h2 id="（一）排查思路"><a href="#（一）排查思路" class="headerlink" title="（一）排查思路"></a>（一）排查思路</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">1. 拿到内存快照（Heap Dump）</span><br><span class="line">      ↓</span><br><span class="line">2. 用分析工具打开</span><br><span class="line">      ↓</span><br><span class="line">3. 查找占用最大的对象 / 对象数量异常增长的类</span><br><span class="line">      ↓</span><br><span class="line">4. 定位到具体代码（GC Root 引用链）</span><br><span class="line">      ↓</span><br><span class="line">5. 修复后验证</span><br></pre></td></tr></table></figure>
+
+<h2 id="（二）导出堆转储"><a href="#（二）导出堆转储" class="headerlink" title="（二）导出堆转储"></a>（二）导出堆转储</h2><p><strong>方式一：启动参数（推荐，自动导出）</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Xms1m -Xmx8m -XX:+HeapDumpOnOutOfMemoryError</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>-XX:+HeapDumpOnOutOfMemoryError</code>：OOM 发生时<strong>自动导出</strong>堆转储文件</li>
+<li><code>-XX:HeapDumpPath=./dump.hprof</code>：指定导出路径</li>
+</ul>
+<p><strong>方式二：手动导出</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jmap -dump:format=b,file=heap.hprof &lt;pid&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="（三）分析工具"><a href="#（三）分析工具" class="headerlink" title="（三）分析工具"></a>（三）分析工具</h2><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>MAT（Eclipse Memory Analyzer）</strong></td>
+<td>分析 dump 文件，<strong>快速定位内存泄漏</strong>、查看大对象、对象引用链</td>
+</tr>
+<tr>
+<td><strong>JProfiler</strong></td>
+<td>实时监控 + dump 分析，可视化强</td>
+</tr>
+<tr>
+<td><strong>jvisualvm</strong></td>
+<td>JDK 自带，轻量级监控与分析</td>
+</tr>
+</tbody></table>
+<p><strong>MAT 核心用法</strong>：</p>
+<ul>
+<li><strong>Leak Suspects</strong>：自动给出内存泄漏可疑点</li>
+<li><strong>Histogram</strong>：按类统计对象数量与占用内存</li>
+<li><strong>Dominator Tree</strong>：找出真正持有内存的”支配对象”</li>
+<li><strong>Path to GC Roots</strong>：查看对象为何无法被回收（<strong>定位泄漏根源的关键</strong>）</li>
+</ul>
+<h2 id="（四）能否看到代码第几行出错"><a href="#（四）能否看到代码第几行出错" class="headerlink" title="（四）能否看到代码第几行出错"></a>（四）能否看到代码第几行出错</h2><ul>
+<li><strong>能</strong>：内存快照分析工具（MAT、JProfiler）可通过引用链定位到具体代码位置</li>
+<li>也可配合 DEBUG 逐行分析</li>
+<li>但更推荐先用工具定位到<strong>类</strong>和<strong>大对象</strong>，再回溯业务代码</li>
+</ul>
+<hr>
+<h1 id="八、总结"><a href="#八、总结" class="headerlink" title="八、总结"></a>八、总结</h1><h2 id="（一）知识地图"><a href="#（一）知识地图" class="headerlink" title="（一）知识地图"></a>（一）知识地图</h2><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>核心要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>整体结构</strong></td>
+<td>类加载器 + 运行时数据区 + 执行引擎</td>
+</tr>
+<tr>
+<td><strong>类加载</strong></td>
+<td>加载 → 验证 → 准备 → 解析 → 初始化；准备赋零值、初始化赋真值</td>
+</tr>
+<tr>
+<td><strong>双亲委派</strong></td>
+<td>先委派父加载器，保证<strong>安全性与唯一性</strong>；重写 <code>loadClass</code> 可打破</td>
+</tr>
+<tr>
+<td><strong>对象创建</strong></td>
+<td>类加载检查 → 分配内存 → 零值初始化 → 设置对象头 → <code>&lt;init&gt;</code></td>
+</tr>
+<tr>
+<td><strong>内存布局</strong></td>
+<td>对象头（Mark Word + Klass Pointer）+ 实例数据 + 对齐填充</td>
+</tr>
+<tr>
+<td><strong>内存区域</strong></td>
+<td>堆、方法区共享；栈、PC、本地方法栈私有</td>
+</tr>
+<tr>
+<td><strong>元空间</strong></td>
+<td>JDK 8+ 用本地内存，逻辑上属于方法区</td>
+</tr>
+<tr>
+<td><strong>GC</strong></td>
+<td>可达性分析 + 分代收集（新生代复制、老年代标记整理）</td>
+</tr>
+<tr>
+<td><strong>排查</strong></td>
+<td><code>-XX:+HeapDumpOnOutOfMemoryError</code> → MAT → Path to GC Roots</td>
+</tr>
+</tbody></table>
+<h2 id="（二）易错清单"><a href="#（二）易错清单" class="headerlink" title="（二）易错清单"></a>（二）易错清单</h2><ol>
+<li><strong>准备阶段只赋零值</strong>：<code>static int a = 10</code> 在准备阶段 <code>a = 0</code></li>
+<li><strong><code>Class.forName</code> 会初始化，<code>loadClass</code> 不会</strong></li>
+<li><strong>Bootstrap 类加载器的 <code>getClassLoader()</code> 返回 <code>null</code></strong></li>
+<li><strong>双亲委派不是强制约束</strong>，重写 <code>loadClass</code> 即可打破</li>
+<li><strong><code>clone</code> 和反序列化不走构造方法</strong>，但仍会分配内存</li>
+<li><strong>零值初始化在构造方法之前</strong>，构造方法中可能读到父类字段的零值</li>
+<li><strong>元空间在本地内存</strong>，不在堆内</li>
+<li><strong>程序计数器是唯一不会 OOM 的区域</strong></li>
+<li><strong>GC 不回收栈空间</strong>，栈帧随方法调用自动释放</li>
+<li><strong>Full GC 比 Minor GC 慢得多</strong>，生产环境应尽量减少</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://planck12-06.github.io">Planck</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://planck12-06.github.io/2026/11/06/JVM%E5%88%9D%E6%8E%A2/">https://planck12-06.github.io/2026/11/06/JVM%E5%88%9D%E6%8E%A2/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://planck12-06.github.io" target="_blank">Planck's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JVM/">JVM</a><a class="post-meta__tags" href="/tags/%E7%B1%BB%E5%8A%A0%E8%BD%BD/">类加载</a><a class="post-meta__tags" href="/tags/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/">垃圾回收</a></div><div class="post-share"><div class="social-share" data-image="/img/webp/xi.webp" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/11/08/JMM%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="JMM基础知识"><img class="cover" src="/img/webp/xi.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">JMM基础知识</div></div><div class="info-2"><div class="info-item-1">JMM（Java Memory Model） JMM 是一套规范，并非一块真实内存。 它定义了多线程环境下，共享变量如何被读写、线程之间如何通信，从根源上屏蔽硬件与操作系统的内存访问差异。  学习主线：    阶段 要回答的问题 对应内容    是什么 JMM 到底是什么 定义、目的、抽象模型   保证什么 并发安全需要哪些性质 原子性、可见性、有序性...</div></div></div></a><a class="pagination-related" href="/2026/10/21/%E4%B8%AA%E4%BA%BA%E5%BC%80%E5%8F%91%E8%80%85%E5%AE%9E%E7%8E%B0%E9%AA%8C%E8%AF%81%E7%A0%81%E7%99%BB%E5%BD%95%E6%B3%A8%E5%86%8C%E5%8A%9F%E8%83%BD/" title="个人开发者实现验证码登录注册功能"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">个人开发者实现验证码登录注册功能</div></div><div class="info-2"><div class="info-item-1">个人开发者实现验证码登录注册功能 面向 Web 网站（PC &#x2F; H5），后端 Spring Boot + Redis，提供 阿里云短信 与 QQ 邮箱 SMTP 两条验证码通道。 个人开发者做这个功能的真正难点不在代码，而在「通道资质 + 防刷成本」。本篇按「选通道 → 设计流程 → 落地细节 → 安全防护」的顺序记录实现思路。   一、先搞...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://github.com/Planck12-06.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Planck</div><div class="author-info-description">记录全栈+AI学习过程的博客</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">30</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">77</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Planck12-06"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到Planck的技术Blog🚀🚀</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#JVM-%E5%88%9D%E6%8E%A2"><span class="toc-text">JVM 初探</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81JVM-%E7%9A%84%E6%95%B4%E4%BD%93%E4%BD%8D%E7%BD%AE%E4%B8%8E%E7%BB%93%E6%9E%84"><span class="toc-text">一、JVM 的整体位置与结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6"><span class="toc-text">二、类加载机制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%80%EF%BC%89%E7%B1%BB%E5%8A%A0%E8%BD%BD%E7%9A%84%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B"><span class="toc-text">（一）类加载的整体流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%BA%8C%EF%BC%89%E5%85%AD%E7%A7%8D%E8%A7%A6%E5%8F%91%E5%88%9D%E5%A7%8B%E5%8C%96%E7%9A%84%E6%97%B6%E6%9C%BA"><span class="toc-text">（二）六种触发初始化的时机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%89%EF%BC%89%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E5%B1%82%E7%BA%A7"><span class="toc-text">（三）类加载器层级</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E5%9B%9B%EF%BC%89%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6"><span class="toc-text">（四）双亲委派机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%BA%94%EF%BC%89%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8"><span class="toc-text">（五）自定义类加载器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E5%85%AD%EF%BC%89%E6%89%93%E7%A0%B4%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E7%9A%84%E7%BB%8F%E5%85%B8%E5%9C%BA%E6%99%AF"><span class="toc-text">（六）打破双亲委派的经典场景</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B"><span class="toc-text">三、对象的创建过程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%80%EF%BC%89%E5%88%9B%E5%BB%BA%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F"><span class="toc-text">（一）创建对象的几种方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%BA%8C%EF%BC%89%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA%E7%9A%84%E4%BA%94%E4%B8%AA%E6%AD%A5%E9%AA%A4"><span class="toc-text">（二）对象创建的五个步骤</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%89%EF%BC%89%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="toc-text">（三）对象内存布局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E5%9B%9B%EF%BC%89-%E4%B8%8E-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">（四）&lt;init&gt; 与 &lt;clinit&gt; 的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%BA%94%EF%BC%89%E7%88%B6%E5%AD%90%E7%B1%BB%E5%AE%8C%E6%95%B4%E5%AE%9E%E4%BE%8B%E5%8C%96%E9%A1%BA%E5%BA%8F"><span class="toc-text">（五）父子类完整实例化顺序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E5%85%AD%EF%BC%89%E5%BB%B6%E4%BC%B8%EF%BC%9A%E5%AF%B9%E8%B1%A1%E4%B8%80%E5%AE%9A%E5%9C%A8%E5%A0%86%E4%B8%8A%E5%90%97%EF%BC%9F"><span class="toc-text">（六）延伸：对象一定在堆上吗？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA"><span class="toc-text">四、运行时数据区</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%80%EF%BC%89%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%88PC-Register%EF%BC%89"><span class="toc-text">（一）程序计数器（PC Register）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%BA%8C%EF%BC%89Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88"><span class="toc-text">（二）Java 虚拟机栈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%89%EF%BC%89%E5%A0%86%EF%BC%88Heap%EF%BC%89"><span class="toc-text">（三）堆（Heap）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E5%9B%9B%EF%BC%89%E6%96%B9%E6%B3%95%E5%8C%BA"><span class="toc-text">（四）方法区</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%B2%99%E7%AE%B1%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6"><span class="toc-text">五、沙箱安全机制</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%EF%BC%88GC%EF%BC%89%E6%9C%BA%E5%88%B6"><span class="toc-text">六、垃圾回收（GC）机制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%80%EF%BC%89%E5%A6%82%E4%BD%95%E5%88%A4%E5%AE%9A%E6%98%AF%E5%9E%83%E5%9C%BE"><span class="toc-text">（一）如何判定是垃圾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%BA%8C%EF%BC%89%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95"><span class="toc-text">（二）垃圾回收算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%89%EF%BC%89%E5%88%86%E4%BB%A3%E5%9B%9E%E6%94%B6%E6%B5%81%E7%A8%8B"><span class="toc-text">（三）分代回收流程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81OOM-%E6%8E%92%E6%9F%A5"><span class="toc-text">七、OOM 排查</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%80%EF%BC%89%E6%8E%92%E6%9F%A5%E6%80%9D%E8%B7%AF"><span class="toc-text">（一）排查思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%BA%8C%EF%BC%89%E5%AF%BC%E5%87%BA%E5%A0%86%E8%BD%AC%E5%82%A8"><span class="toc-text">（二）导出堆转储</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%89%EF%BC%89%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7"><span class="toc-text">（三）分析工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E5%9B%9B%EF%BC%89%E8%83%BD%E5%90%A6%E7%9C%8B%E5%88%B0%E4%BB%A3%E7%A0%81%E7%AC%AC%E5%87%A0%E8%A1%8C%E5%87%BA%E9%94%99"><span class="toc-text">（四）能否看到代码第几行出错</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">八、总结</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%80%EF%BC%89%E7%9F%A5%E8%AF%86%E5%9C%B0%E5%9B%BE"><span class="toc-text">（一）知识地图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%BA%8C%EF%BC%89%E6%98%93%E9%94%99%E6%B8%85%E5%8D%95"><span class="toc-text">（二）易错清单</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/11/11/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%88%9D%E6%8E%A2/" title="计算机网络初探"><img src="/img/webp/xi.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="计算机网络初探"/></a><div class="content"><a class="title" href="/2026/11/11/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%88%9D%E6%8E%A2/" title="计算机网络初探">计算机网络初探</a><time datetime="2026-11-11T12:53:50.000Z" title="发表于 2026-11-11 20:53:50">2026-11-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/11/08/JMM%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="JMM基础知识"><img src="/img/webp/xi.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JMM基础知识"/></a><div class="content"><a class="title" href="/2026/11/08/JMM%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="JMM基础知识">JMM基础知识</a><time datetime="2026-11-08T07:24:12.000Z" title="发表于 2026-11-08 15:24:12">2026-11-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/11/06/JVM%E5%88%9D%E6%8E%A2/" title="JVM初探"><img src="/img/webp/xi.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JVM初探"/></a><div class="content"><a class="title" href="/2026/11/06/JVM%E5%88%9D%E6%8E%A2/" title="JVM初探">JVM初探</a><time datetime="2026-11-06T10:10:46.000Z" title="发表于 2026-11-06 18:10:46">2026-11-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/21/%E4%B8%AA%E4%BA%BA%E5%BC%80%E5%8F%91%E8%80%85%E5%AE%9E%E7%8E%B0%E9%AA%8C%E8%AF%81%E7%A0%81%E7%99%BB%E5%BD%95%E6%B3%A8%E5%86%8C%E5%8A%9F%E8%83%BD/" title="个人开发者实现验证码登录注册功能">个人开发者实现验证码登录注册功能</a><time datetime="2026-10-21T11:27:25.000Z" title="发表于 2026-10-21 19:27:25">2026-10-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/14/uniapp%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F/" title="uniapp基本使用方式"><img src="/img/webp/xi.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="uniapp基本使用方式"/></a><div class="content"><a class="title" href="/2026/10/14/uniapp%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F/" title="uniapp基本使用方式">uniapp基本使用方式</a><time datetime="2026-10-14T08:30:53.000Z" title="发表于 2026-10-14 16:30:53">2026-10-14</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Planck</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.14/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script src="/js/index-list.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.5"></script></div></div></body></html>
